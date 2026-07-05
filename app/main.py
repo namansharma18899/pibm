@@ -9,9 +9,15 @@ from app.dependencies import RedirectException
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="PIBM - Public Speaking Tracker")
+    app = FastAPI(title="Student Prep - Public Speaking Tracker")
 
     app.add_middleware(SessionMiddleware, secret_key=settings.secret_key)
+
+    @app.middleware("http")
+    async def forward_proto(request: Request, call_next):
+        if request.headers.get("x-forwarded-proto") == "https":
+            request.scope["scheme"] = "https"
+        return await call_next(request)
     app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
     @app.exception_handler(RedirectException)
