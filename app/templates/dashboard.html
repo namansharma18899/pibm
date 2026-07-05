@@ -33,7 +33,7 @@
         {% if pending_ratings %}
         <div class="space-y-2">
             {% for item in pending_ratings %}
-            <div class="bg-white rounded-lg shadow p-3 flex items-center justify-between">
+            <div class="bg-white rounded-lg shadow p-3 flex items-center justify-between gap-2 flex-wrap">
                 <div>
                     <div class="font-medium">{{ item.participation.student.name }}</div>
                     <div class="text-sm text-gray-500">{{ item.event.title }}</div>
@@ -52,7 +52,7 @@
 {% if my_participations %}
 <div class="mt-6">
     <h2 class="text-lg font-semibold mb-3">My Recent Performances</h2>
-    <div class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="bg-white rounded-lg shadow overflow-hidden overflow-x-auto">
         <table class="w-full">
             <thead class="bg-gray-50">
                 <tr>

@@ -6,14 +6,14 @@
     <a href="/admin" class="text-indigo-600 hover:underline">&larr; Back to Dashboard</a>
 </div>
 
-<div class="bg-white rounded-lg shadow overflow-hidden">
+<div class="bg-white rounded-lg shadow overflow-hidden overflow-x-auto">
     <table class="w-full">
         <thead class="bg-gray-50">
             <tr>
                 <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Name</th>
                 <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Email</th>
                 <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Role</th>
-                <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Joined</th>
+                <th class="text-left px-4 py-3 text-sm font-medium text-gray-500 hidden md:table-cell">Joined</th>
                 <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Actions</th>
             </tr>
         </thead>
@@ -22,17 +22,19 @@
             <tr>
                 {% set av = get_avatar(student.id) %}
                 <td class="px-4 py-3 flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-lg" style="background-color: {{ av.color }}">{{ av.emoji }}</div>
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-lg shrink-0" style="background-color: {{ av.color }}">{{ av.emoji }}</div>
                     <a href="/profile/{{ student.id }}" class="text-indigo-600 hover:underline">{{ student.name }}</a>
                 </td>
-                <td class="px-4 py-3 text-sm text-gray-500">{{ student.email }}</td>
+                <td class="px-4 py-3 text-sm text-gray-500">
+                    <span class="inline-block max-w-[150px] md:max-w-none truncate">{{ student.email }}</span>
+                </td>
                 <td class="px-4 py-3">
                     <span class="px-2 py-1 rounded-full text-xs font-medium
                         {% if student.role == 'admin' %}bg-red-100 text-red-800{% else %}bg-green-100 text-green-800{% endif %}">
                         {{ student.role }}
                     </span>
                 </td>
-                <td class="px-4 py-3 text-sm text-gray-500">{{ student.created_at.strftime('%b %d, %Y') }}</td>
+                <td class="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">{{ student.created_at.strftime('%b %d, %Y') }}</td>
                 <td class="px-4 py-3">
                     {% if student.id != user.id %}
                     <form method="post" action="/admin/students/{{ student.id }}/role" class="inline">

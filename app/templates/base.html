@@ -11,7 +11,15 @@
     <nav class="bg-white shadow-sm border-b">
         <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
             <a href="/" class="text-xl font-bold text-indigo-600">Student Prep</a>
-            <div class="flex items-center gap-4">
+
+            {% if user %}
+            <button id="menu-toggle" class="md:hidden p-1 text-gray-600 hover:text-indigo-600" aria-label="Toggle menu">
+                <svg id="menu-open-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                <svg id="menu-close-icon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+            {% endif %}
+
+            <div class="hidden md:flex items-center gap-4">
                 {% if user %}
                     <a href="/events" class="text-gray-600 hover:text-indigo-600">Events</a>
                     <a href="/profile/me" class="text-gray-600 hover:text-indigo-600">My Profile</a>
@@ -29,7 +37,38 @@
                 {% endif %}
             </div>
         </div>
+
+        {% if user %}
+        <div id="mobile-menu" class="hidden md:hidden border-t bg-white px-4 py-3 space-y-3">
+            {% set av = get_avatar(user.id) %}
+            <div class="flex items-center gap-2 pb-2 border-b">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-lg" style="background-color: {{ av.color }}">{{ av.emoji }}</div>
+                <span class="text-sm text-gray-700 font-medium">{{ user.name }}</span>
+            </div>
+            <a href="/events" class="block text-gray-600 hover:text-indigo-600">Events</a>
+            <a href="/profile/me" class="block text-gray-600 hover:text-indigo-600">My Profile</a>
+            {% if user.role == "admin" %}
+                <a href="/admin" class="block text-gray-600 hover:text-indigo-600 font-medium">Admin</a>
+            {% endif %}
+            <a href="/logout" class="block text-sm text-red-500 hover:text-red-700 pt-2 border-t">Logout</a>
+        </div>
+        {% endif %}
     </nav>
+
+    <script>
+    (function() {
+        var btn = document.getElementById('menu-toggle');
+        if (!btn) return;
+        btn.addEventListener('click', function() {
+            var menu = document.getElementById('mobile-menu');
+            var open = document.getElementById('menu-open-icon');
+            var close = document.getElementById('menu-close-icon');
+            menu.classList.toggle('hidden');
+            open.classList.toggle('hidden');
+            close.classList.toggle('hidden');
+        });
+    })();
+    </script>
 
     {% if flash %}
     <div class="max-w-6xl mx-auto px-4 mt-4">

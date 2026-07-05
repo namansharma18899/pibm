@@ -64,12 +64,12 @@
 
 {% if stats.event_history %}
 <h2 class="text-lg font-semibold mb-3">Event History</h2>
-<div class="bg-white rounded-lg shadow overflow-hidden">
+<div class="bg-white rounded-lg shadow overflow-hidden overflow-x-auto">
     <table class="w-full">
         <thead class="bg-gray-50">
             <tr>
                 <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Event</th>
-                <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Type</th>
+                <th class="text-left px-4 py-3 text-sm font-medium text-gray-500 hidden md:table-cell">Type</th>
                 <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Date</th>
                 <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Score</th>
                 <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Ratings</th>
@@ -81,7 +81,7 @@
                 <td class="px-4 py-3">
                     <a href="/events/{{ item.event.id }}" class="text-indigo-600 hover:underline">{{ item.event.title }}</a>
                 </td>
-                <td class="px-4 py-3">
+                <td class="px-4 py-3 hidden md:table-cell">
                     <span class="px-2 py-0.5 rounded-full text-xs font-medium
                         {% if item.event.event_type == 'speed_talk' %}bg-blue-100 text-blue-800
                         {% elif item.event.event_type == 'long_speech' %}bg-purple-100 text-purple-800

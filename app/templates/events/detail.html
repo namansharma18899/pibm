@@ -29,10 +29,10 @@
 <div class="grid gap-3">
     {% for p in event.participations %}
     <div class="bg-white rounded-lg shadow p-4">
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between flex-wrap gap-2">
             <div class="flex items-center gap-3">
                 {% set av = get_avatar(p.student.id) %}
-                <div class="w-10 h-10 rounded-full flex items-center justify-center text-xl" style="background-color: {{ av.color }}">{{ av.emoji }}</div>
+                <div class="w-10 h-10 rounded-full flex items-center justify-center text-xl shrink-0" style="background-color: {{ av.color }}">{{ av.emoji }}</div>
                 <div>
                     <a href="/profile/{{ p.student.id }}" class="font-medium text-indigo-600 hover:underline">{{ p.student.name }}</a>
                     {% if p.attended %}
