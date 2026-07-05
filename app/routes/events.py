@@ -24,11 +24,12 @@ async def list_events(
     rated_event_ids = set()
     if user:
         for event in completed:
+            is_speaker = any(p.student_id == user.id for p in event.participations)
+            if is_speaker:
+                continue
             has_pending = False
             has_rateable = False
             for p in event.participations:
-                if p.student_id == user.id:
-                    continue
                 has_rateable = True
                 existing = (
                     db.query(Rating)
@@ -71,8 +72,11 @@ async def event_detail(
         return RedirectResponse(url="/events", status_code=303)
 
     my_ratings = {}
+    user_is_speaker = False
     if user:
         for p in event.participations:
+            if p.student_id == user.id:
+                user_is_speaker = True
             rating = (
                 db.query(Rating)
                 .filter(Rating.participation_id == p.id, Rating.rater_id == user.id)
@@ -89,6 +93,7 @@ async def event_detail(
             "flash": flash,
             "event": event,
             "my_ratings": my_ratings,
+            "user_is_speaker": user_is_speaker,
         },
     )
 
@@ -116,6 +121,14 @@ async def rate_form(
         return RedirectResponse(url=f"/events/{event_id}", status_code=303)
 
     event = participation.event
+
+    is_speaker = db.query(Participation).filter(
+        Participation.event_id == event_id, Participation.student_id == user.id
+    ).first() is not None
+    if is_speaker:
+        set_flash(request, "Speakers cannot rate other speakers in the same event", "error")
+        return RedirectResponse(url=f"/events/{event_id}", status_code=303)
+
     if event.status != "completed":
         set_flash(request, "Ratings are only available for completed events", "error")
         return RedirectResponse(url=f"/events/{event_id}", status_code=303)
@@ -161,6 +174,14 @@ async def submit_rating(
         return RedirectResponse(url=f"/events/{event_id}", status_code=303)
 
     event = participation.event
+
+    is_speaker = db.query(Participation).filter(
+        Participation.event_id == event_id, Participation.student_id == user.id
+    ).first() is not None
+    if is_speaker:
+        set_flash(request, "Speakers cannot rate other speakers in the same event", "error")
+        return RedirectResponse(url=f"/events/{event_id}", status_code=303)
+
     if event.status != "completed":
         set_flash(request, "Ratings are only available for completed events", "error")
         return RedirectResponse(url=f"/events/{event_id}", status_code=303)

@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
@@ -56,9 +58,10 @@ async def dashboard(
 
     pending_ratings = []
     for event in completed_events:
+        is_speaker = any(p.student_id == user.id for p in event.participations)
+        if is_speaker:
+            continue
         for p in event.participations:
-            if p.student_id == user.id:
-                continue
             existing = (
                 db.query(Rating)
                 .filter(Rating.participation_id == p.id, Rating.rater_id == user.id)
@@ -67,12 +70,24 @@ async def dashboard(
             if not existing:
                 pending_ratings.append({"event": event, "participation": p})
 
+    hour = datetime.now(timezone.utc).hour
+    if hour < 12:
+        greeting = "Good morning"
+    elif hour < 17:
+        greeting = "Good afternoon"
+    else:
+        greeting = "Good evening"
+
+    total_participations = db.query(Participation).filter(Participation.student_id == user.id).count()
+
     return templates.TemplateResponse(
         "dashboard.html",
         {
             "request": request,
             "user": user,
             "flash": flash,
+            "greeting": greeting,
+            "total_participations": total_participations,
             "upcoming_events": upcoming_events,
             "my_participations": my_participations,
             "pending_ratings": pending_ratings[:10],

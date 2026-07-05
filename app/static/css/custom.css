@@ -29,3 +29,31 @@
         box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
     }
 }
+
+.fade-in-up {
+    animation: fadeInUp 0.6s ease-out both;
+}
+
+.fade-in-up-delay-1 { animation-delay: 0.15s; }
+.fade-in-up-delay-2 { animation-delay: 0.3s; }
+.fade-in-up-delay-3 { animation-delay: 0.45s; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+.float-slow { animation: float 4s ease-in-out infinite; }
+.float-slow-delay { animation: float 4s ease-in-out 1s infinite; }
+.float-slow-delay-2 { animation: float 4s ease-in-out 2s infinite; }
