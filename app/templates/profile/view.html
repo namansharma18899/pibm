@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block title %}{{ target.name }}{% endblock %}
+{% block content %}
+<div class="mb-6">
+    <div class="flex items-center gap-4">
+        {% set av = get_avatar(target.id) %}
+        <div class="w-16 h-16 rounded-full flex items-center justify-center text-4xl" style="background-color: {{ av.color }}">{{ av.emoji }}</div>
+        <div>
+            <h1 class="text-2xl font-bold">{{ target.name }}</h1>
+            <p class="text-gray-500">{{ target.email }}</p>
+        </div>
+    </div>
+</div>
+
+{% if can_view_stats and stats %}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+    <div class="bg-white rounded-lg shadow p-6 text-center">
+        <div class="text-3xl font-bold text-indigo-600 counter" data-target="{{ stats.total_events }}">0</div>
+        <div class="text-gray-500 mt-1">Events</div>
+    </div>
+    <div class="bg-white rounded-lg shadow p-6 text-center">
+        <div class="text-3xl font-bold text-indigo-600 counter" data-target="{{ stats.attended_events }}">0</div>
+        <div class="text-gray-500 mt-1">Attended</div>
+    </div>
+    <div class="bg-white rounded-lg shadow p-6 text-center">
+        <div class="text-3xl font-bold text-indigo-600">
+            {% if stats.overall_avg is not none %}
+                <span class="skill-score" data-target="{{ "%.1f"|format(stats.overall_avg) }}">0.0</span>/5
+            {% else %}-{% endif %}
+        </div>
+        <div class="text-gray-500 mt-1">Overall Score</div>
+    </div>
+</div>
+
+{% if stats.category_avgs or stats.speed_talk_avg is not none %}
+<h2 class="text-lg font-semibold mb-3">Speaking Strengths</h2>
+<div class="bg-white rounded-lg shadow p-6 mb-8">
+    {% if stats.speed_talk_avg is not none %}
+    <div class="mb-4">
+        <div class="flex justify-between text-sm mb-1">
+            <span class="font-medium">Speed Talks</span>
+            <span class="text-indigo-600 font-bold skill-score" data-target="{{ "%.1f"|format(stats.speed_talk_avg) }}">0.0/5</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+            <div class="skill-bar bg-indigo-600 h-3 rounded-full" data-width="{{ (stats.speed_talk_avg / 5 * 100)|round }}" style="width: 0%"></div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% set labels = {'clarity': 'Clarity of Speech', 'confidence': 'Confidence', 'body_language': 'Body Language', 'presentation_skills': 'Presentation Skills', 'content': 'Content'} %}
+    {% for field, avg in stats.category_avgs.items() %}
+    <div class="mb-4 last:mb-0">
+        <div class="flex justify-between text-sm mb-1">
+            <span class="font-medium">{{ labels[field] }}</span>
+            <span class="text-indigo-600 font-bold skill-score" data-target="{{ "%.1f"|format(avg) }}">0.0/5</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+            <div class="skill-bar bg-indigo-600 h-3 rounded-full" data-width="{{ (avg / 5 * 100)|round }}" style="width: 0%"></div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if stats.event_history %}
+<h2 class="text-lg font-semibold mb-3">Event History</h2>
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    <table class="w-full">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Event</th>
+                <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Type</th>
+                <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Date</th>
+                <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Score</th>
+                <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Ratings</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y">
+            {% for item in stats.event_history %}
+            <tr>
+                <td class="px-4 py-3">
+                    <a href="/events/{{ item.event.id }}" class="text-indigo-600 hover:underline">{{ item.event.title }}</a>
+                </td>
+                <td class="px-4 py-3">
+                    <span class="px-2 py-0.5 rounded-full text-xs font-medium
+                        {% if item.event.event_type == 'speed_talk' %}bg-blue-100 text-blue-800
+                        {% elif item.event.event_type == 'long_speech' %}bg-purple-100 text-purple-800
+                        {% else %}bg-orange-100 text-orange-800{% endif %}">
+                        {{ item.event.event_type_display }}
+                    </span>
+                </td>
+                <td class="px-4 py-3 text-sm text-gray-500">{{ item.event.scheduled_date.strftime('%b %d, %Y') }}</td>
+                <td class="px-4 py-3">
+                    {% if item.score is not none %}
+                        <span class="font-bold text-indigo-600">{{ "%.1f"|format(item.score) }}/5</span>
+                    {% else %}
+                        <span class="text-gray-400">-</span>
+                    {% endif %}
+                </td>
+                <td class="px-4 py-3 text-sm text-gray-500">{{ item.rating_count }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% else %}
+<div class="bg-white rounded-lg shadow p-8 text-center text-gray-500">
+    <p>You don't have permission to view this student's stats.</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  // Animate skill bars
+  setTimeout(function () {
+    document.querySelectorAll(".skill-bar").forEach(function (bar, i) {
+      setTimeout(function () {
+        bar.style.transition = "width 1s cubic-bezier(0.4, 0, 0.2, 1)";
+        bar.style.width = bar.dataset.width + "%";
+      }, i * 150);
+    });
+  }, 200);
+
+  // Animate score numbers (e.g. 0.0 -> 4.2)
+  document.querySelectorAll(".skill-score").forEach(function (el, i) {
+    var target = parseFloat(el.dataset.target);
+    var suffix = el.textContent.includes("/5") ? "/5" : "";
+    var duration = 1000;
+    var start = performance.now();
+    setTimeout(function () {
+      function tick(now) {
+        var elapsed = now - start;
+        var progress = Math.min(elapsed / duration, 1);
+        progress = 1 - Math.pow(1 - progress, 3);
+        el.textContent = (target * progress).toFixed(1) + suffix;
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      start = performance.now();
+      requestAnimationFrame(tick);
+    }, 200 + i * 150);
+  });
+
+  // Animate integer counters (e.g. 0 -> 12)
+  document.querySelectorAll(".counter").forEach(function (el, i) {
+    var target = parseInt(el.dataset.target);
+    if (target === 0) return;
+    var duration = 800;
+    var start = performance.now();
+    setTimeout(function () {
+      function tick(now) {
+        var elapsed = now - start;
+        var progress = Math.min(elapsed / duration, 1);
+        progress = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(target * progress);
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      start = performance.now();
+      requestAnimationFrame(tick);
+    }, i * 150);
+  });
+});
+</script>
+{% endblock %}

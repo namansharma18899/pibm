@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-6">Welcome, {{ user.name }}</h1>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div>
+        <h2 class="text-lg font-semibold mb-3">Upcoming Events</h2>
+        {% if upcoming_events %}
+        <div class="space-y-2">
+            {% for event in upcoming_events %}
+            <a href="/events/{{ event.id }}" class="block bg-white rounded-lg shadow p-3 hover:shadow-md transition">
+                <div class="font-medium">{{ event.title }}</div>
+                <div class="text-sm text-gray-500 flex gap-2 mt-1">
+                    <span class="px-2 py-0.5 rounded-full text-xs font-medium
+                        {% if event.event_type == 'speed_talk' %}bg-blue-100 text-blue-800
+                        {% elif event.event_type == 'long_speech' %}bg-purple-100 text-purple-800
+                        {% else %}bg-orange-100 text-orange-800{% endif %}">
+                        {{ event.event_type_display }}
+                    </span>
+                    <span>{{ event.scheduled_date.strftime('%b %d, %Y') }}</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-400 bg-white rounded-lg shadow p-4">No upcoming events.</p>
+        {% endif %}
+    </div>
+
+    <div>
+        <h2 class="text-lg font-semibold mb-3">Pending Ratings</h2>
+        {% if pending_ratings %}
+        <div class="space-y-2">
+            {% for item in pending_ratings %}
+            <div class="bg-white rounded-lg shadow p-3 flex items-center justify-between">
+                <div>
+                    <div class="font-medium">{{ item.participation.student.name }}</div>
+                    <div class="text-sm text-gray-500">{{ item.event.title }}</div>
+                </div>
+                <a href="/events/{{ item.event.id }}/rate/{{ item.participation.id }}"
+                   class="text-sm bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700">Rate</a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-400 bg-white rounded-lg shadow p-4">No pending ratings.</p>
+        {% endif %}
+    </div>
+</div>
+
+{% if my_participations %}
+<div class="mt-6">
+    <h2 class="text-lg font-semibold mb-3">My Recent Performances</h2>
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table class="w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Event</th>
+                    <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Type</th>
+                    <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Score</th>
+                    <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Ratings</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y">
+                {% for p in my_participations %}
+                <tr>
+                    <td class="px-4 py-3">
+                        <a href="/events/{{ p.event.id }}" class="text-indigo-600 hover:underline">{{ p.event.title }}</a>
+                    </td>
+                    <td class="px-4 py-3 text-sm">{{ p.event.event_type_display }}</td>
+                    <td class="px-4 py-3">
+                        {% if p.average_score is not none %}
+                            <span class="font-bold text-indigo-600">{{ "%.1f"|format(p.average_score) }}/5</span>
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-500">{{ p.ratings|length }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

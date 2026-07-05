@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Rate {{ participation.student.name }}{% endblock %}
+{% block content %}
+<div class="mb-6">
+    <a href="/events/{{ event.id }}" class="text-indigo-600 hover:underline text-sm">&larr; Back to {{ event.title }}</a>
+    <h1 class="text-2xl font-bold mt-2">Rate {{ participation.student.name }}</h1>
+    <p class="text-gray-500">{{ event.title }} &middot; {{ event.event_type_display }}</p>
+</div>
+
+<div class="bg-white rounded-lg shadow p-6 max-w-lg">
+    <form method="post" action="/events/{{ event.id }}/rate/{{ participation.id }}">
+
+        {% if event.event_type == 'speed_talk' %}
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Overall Rating</label>
+            <div class="star-rating flex items-center gap-1">
+                <input type="hidden" name="star_rating" value="{{ existing.star_rating if existing else 0 }}">
+                {% for i in range(1, 6) %}
+                <span class="star" data-value="{{ i }}">☆</span>
+                {% endfor %}
+                <button type="button" class="star-reset ml-3 text-xs text-gray-400 hover:text-red-500 transition">Reset</button>
+            </div>
+        </div>
+
+        {% else %}
+        {% set categories = [
+            ('clarity', 'Clarity of Speech', 'How clear and understandable was the speaker?'),
+            ('confidence', 'Confidence', 'How confident did the speaker appear?'),
+            ('body_language', 'Body Language', 'How effective was the speaker\'s body language?'),
+            ('presentation_skills', 'Presentation Skills', 'How well did the speaker present their material?'),
+            ('content', 'Content', 'How strong was the content of the speech?')
+        ] %}
+
+        {% for field, label, help_text in categories %}
+        <div class="mb-5">
+            <div class="flex items-center justify-between mb-1">
+                <label class="block text-sm font-medium text-gray-700">{{ label }}</label>
+                <button type="button" class="category-reset text-xs text-gray-400 hover:text-red-500 transition" data-field="{{ field }}">Reset</button>
+            </div>
+            <p class="text-xs text-gray-400 mb-2">{{ help_text }}</p>
+            <div class="flex gap-2" data-category="{{ field }}">
+                {% for i in range(1, 6) %}
+                <label class="flex-1">
+                    <input type="radio" name="{{ field }}" value="{{ i }}" class="sr-only peer"
+                           {% if existing and existing[field] == i %}checked{% endif %}>
+                    <div class="text-center py-2 rounded-lg border cursor-pointer
+                                peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600
+                                hover:bg-indigo-50 transition">
+                        {{ i }}
+                    </div>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <button type="submit" class="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 font-medium">
+            {{ 'Update Rating' if existing else 'Submit Rating' }}
+        </button>
+    </form>
+</div>
+{% endblock %}

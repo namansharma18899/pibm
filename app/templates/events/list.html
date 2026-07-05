@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Events{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-6">Events</h1>
+
+{% macro event_card(event, show_rate=false, is_rated=false) %}
+<a href="/events/{{ event.id }}" class="block rounded-lg shadow hover:shadow-md transition p-4
+    {% if is_rated %}bg-gray-100 opacity-60{% else %}bg-white{% endif %}">
+    <div class="flex items-start justify-between">
+        <div>
+            <h3 class="font-semibold text-lg {% if is_rated %}text-gray-400{% endif %}">{{ event.title }}</h3>
+            <div class="flex gap-2 mt-1 flex-wrap items-center">
+                <span class="px-2 py-0.5 rounded-full text-xs font-medium
+                    {% if event.event_type == 'speed_talk' %}bg-blue-100 text-blue-800
+                    {% elif event.event_type == 'long_speech' %}bg-purple-100 text-purple-800
+                    {% else %}bg-orange-100 text-orange-800{% endif %}">
+                    {{ event.event_type_display }}
+                </span>
+                <span class="px-2 py-0.5 rounded-full text-xs font-medium
+                    {% if event.status == 'upcoming' %}bg-yellow-100 text-yellow-800
+                    {% elif event.status == 'in_progress' %}bg-blue-100 text-blue-800
+                    {% else %}bg-green-100 text-green-800{% endif %}">
+                    {{ event.status_display }}
+                </span>
+                {% if show_rate %}
+                <span class="rate-pill px-2 py-0.5 rounded-full text-xs font-bold bg-red-500 text-white">
+                    Give Rating
+                </span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="text-sm text-gray-500 text-right">
+            <div>{{ event.scheduled_date.strftime('%b %d, %Y') }}</div>
+            <div>{{ event.scheduled_date.strftime('%I:%M %p') }}</div>
+        </div>
+    </div>
+    {% if event.description %}
+    <p class="text-sm text-gray-500 mt-2">{{ event.description[:100] }}{% if event.description|length > 100 %}...{% endif %}</p>
+    {% endif %}
+    <div class="flex items-center gap-2 mt-2 flex-wrap">
+        {% for p in event.participations %}
+        <span class="inline-flex items-center gap-1 text-xs text-gray-500 bg-gray-100 rounded-full px-2 py-0.5">
+            {% set av = get_avatar(p.student.id) %}
+            <span style="font-size: 0.75rem">{{ av.emoji }}</span>
+            {{ p.student.name }}
+        </span>
+        {% endfor %}
+        {% if not event.participations %}
+        <span class="text-sm text-gray-400">No speakers yet</span>
+        {% endif %}
+    </div>
+</a>
+{% endmacro %}
+
+{% if upcoming %}
+<h2 class="text-lg font-semibold mb-3">Upcoming & In Progress</h2>
+<div class="grid gap-3 mb-8">
+    {% for event in upcoming %}
+    {{ event_card(event) }}
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if completed %}
+<h2 class="text-lg font-semibold mb-3">Completed</h2>
+<div class="grid gap-3">
+    {% for event in completed %}
+    {{ event_card(event, show_rate=(event.id in pending_event_ids), is_rated=(event.id in rated_event_ids)) }}
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if not upcoming and not completed %}
+<p class="text-gray-500 text-center py-8">No events yet.</p>
+{% endif %}
+{% endblock %}

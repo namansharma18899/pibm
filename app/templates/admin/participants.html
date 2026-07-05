@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Manage Speakers - {{ event.title }}{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <div>
+        <h1 class="text-2xl font-bold">Speakers: {{ event.title }}</h1>
+        <p class="text-gray-500">{{ event.event_type_display }} &middot; {{ event.scheduled_date.strftime('%b %d, %Y %I:%M %p') }}</p>
+    </div>
+    <a href="/admin/events" class="text-indigo-600 hover:underline">&larr; Back to Events</a>
+</div>
+
+{% if available_students %}
+<div class="bg-white rounded-lg shadow p-4 mb-6">
+    <h2 class="text-sm font-semibold text-gray-700 mb-2">Add Speaker</h2>
+    <form method="post" action="/admin/events/{{ event.id }}/participants/add" class="flex gap-3">
+        <select name="student_id" required class="flex-1 border rounded-lg px-3 py-2">
+            {% for s in available_students %}
+            <option value="{{ s.id }}">{{ s.name }} ({{ s.email }})</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">Add</button>
+    </form>
+</div>
+{% endif %}
+
+{% if event.participations %}
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    <table class="w-full">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Student</th>
+                <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Attended</th>
+                <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Ratings</th>
+                <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y">
+            {% for p in event.participations %}
+            <tr>
+                <td class="px-4 py-3">{{ p.student.name }}</td>
+                <td class="px-4 py-3">
+                    {% if p.attended %}
+                        <span class="text-green-600">Yes</span>
+                    {% else %}
+                        <span class="text-gray-400">No</span>
+                    {% endif %}
+                </td>
+                <td class="px-4 py-3 text-sm">{{ p.ratings|length }} ratings</td>
+                <td class="px-4 py-3">
+                    <form method="post" action="/admin/events/{{ event.id }}/participants/{{ p.id }}/remove" class="inline"
+                          onsubmit="return confirm('Remove this speaker?')">
+                        <button type="submit" class="text-sm text-red-600 hover:underline">Remove</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p class="text-gray-500 text-center py-8">No speakers added yet.</p>
+{% endif %}
+{% endblock %}
