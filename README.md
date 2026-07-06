@@ -25,7 +25,6 @@ A web app for tracking and rating student speaking performance across events lik
 ```bash
 # Clone
 git clone https://github.com/namansharma18899/pibm.git
-cd pibm
 
 # Setup
 python3 -m venv .venv
