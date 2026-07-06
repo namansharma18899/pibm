@@ -1,60 +1,114 @@
 {% extends "base.html" %}
 {% block title %}Welcome{% endblock %}
 {% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+    .hero-font { font-family: 'Space Mono', monospace; }
+    .topic-pill {
+        position: absolute;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 8px 18px;
+        font-size: 0.85rem;
+        color: #374151;
+        white-space: nowrap;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .topic-pill:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .topic-pill.highlight {
+        background: #ffe4e6;
+        border-color: #fda4af;
+        color: #e11d48;
+        font-weight: 600;
+    }
+    .dashed-accent {
+        border: 2px dashed #e11d48;
+        border-radius: 16px;
+        padding: 12px 32px;
+        display: inline-block;
+    }
+</style>
+
 <div class="-mx-4 -mt-6">
-    <div class="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-700 px-4 py-20 md:py-28">
-        <div class="absolute inset-0 overflow-hidden">
-            <div class="absolute -top-10 -right-10 w-72 h-72 bg-white/5 rounded-full float-slow"></div>
-            <div class="absolute top-1/2 -left-16 w-48 h-48 bg-white/5 rounded-full float-slow-delay"></div>
-            <div class="absolute bottom-10 right-1/4 w-32 h-32 bg-white/5 rounded-full float-slow-delay-2"></div>
+    <div class="relative bg-white overflow-hidden" style="min-height: 80vh;">
+
+        <div class="hidden md:block">
+            <span class="topic-pill" style="top: 8%; right: 8%;">Presentation</span>
+            <span class="topic-pill" style="top: 15%; left: 5%;">Body Language</span>
+            <span class="topic-pill highlight" style="top: 28%; left: 8%;">Speed Talk</span>
+            <span class="topic-pill" style="top: 22%; right: 22%;">Clarity</span>
+            <span class="topic-pill" style="top: 12%; right: 35%;">Peer Review</span>
+            <span class="topic-pill" style="top: 40%; left: 3%;">Storytelling</span>
+            <span class="topic-pill" style="top: 55%; left: 6%;">Eye Contact</span>
+            <span class="topic-pill" style="top: 38%; right: 5%;">Debate</span>
+            <span class="topic-pill" style="top: 52%; right: 10%;">Content</span>
+            <span class="topic-pill" style="top: 65%; right: 3%;">Vocal Tone</span>
+            <span class="topic-pill" style="top: 68%; left: 2%;">Vocabulary</span>
+            <span class="topic-pill" style="top: 78%; right: 18%;">Long Speech</span>
+            <span class="topic-pill" style="top: 80%; left: 12%;">Persuasion</span>
+            <span class="topic-pill" style="top: 48%; right: 28%;">Feedback</span>
+            <span class="topic-pill" style="top: 88%; right: 35%;">Stage Presence</span>
+            <span class="topic-pill" style="top: 85%; left: 30%;">Improvisation</span>
         </div>
 
-        <div class="relative max-w-3xl mx-auto text-center">
-            <div class="fade-in-up">
-                <span class="inline-block px-4 py-1.5 bg-white/10 backdrop-blur rounded-full text-indigo-100 text-sm font-medium mb-6 border border-white/20">
-                    Public Speaking Tracker
+        <div class="relative flex flex-col items-center justify-center text-center px-4" style="min-height: 80vh;">
+            <div class="fade-in-up mb-2">
+                <span class="hero-font text-lg md:text-xl font-bold tracking-tight">
+                    s<span class="text-rose-500">:</span>
                 </span>
             </div>
-            <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-4 fade-in-up fade-in-up-delay-1 leading-tight">
-                Speak with<br>
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-pink-200 to-pink-300">Confidence</span>
-            </h1>
-            <p class="text-lg md:text-xl text-indigo-100 mb-10 max-w-xl mx-auto fade-in-up fade-in-up-delay-2">
-                Track your progress, get peer feedback, and grow into a better speaker — one event at a time.
+
+            <div class="fade-in-up fade-in-up-delay-1">
+                <h1 class="hero-font text-4xl md:text-6xl lg:text-7xl font-bold text-gray-900 leading-tight">
+                    <span class="dashed-accent">Speak with</span><br class="md:hidden">
+                    <span class="block mt-2 md:mt-3">confidence</span>
+                </h1>
+            </div>
+
+            <p class="text-gray-500 text-lg md:text-xl mt-6 mb-10 max-w-lg mx-auto fade-in-up fade-in-up-delay-2">
+                Track your progress, get peer feedback, and grow into a better speaker.
             </p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center fade-in-up fade-in-up-delay-3">
-                <a href="/login" class="bg-white text-indigo-700 px-8 py-3.5 rounded-xl font-semibold text-lg shadow-lg shadow-indigo-900/30 hover:shadow-xl hover:scale-105 transition-all duration-200">
+
+            <div class="flex flex-col sm:flex-row gap-4 fade-in-up fade-in-up-delay-3">
+                <a href="/login" class="bg-rose-500 text-white px-8 py-3.5 rounded-xl font-semibold text-lg hover:bg-rose-600 hover:scale-105 transition-all duration-200 shadow-md">
                     Get Started
                 </a>
-                <a href="/events" class="bg-white/10 backdrop-blur text-white px-8 py-3.5 rounded-xl font-semibold text-lg border border-white/25 hover:bg-white/20 transition-all duration-200">
+                <a href="/events" class="bg-white text-gray-700 px-8 py-3.5 rounded-xl font-semibold text-lg border border-gray-200 hover:border-gray-400 hover:shadow-md transition-all duration-200">
                     View Events
                 </a>
             </div>
         </div>
     </div>
 
-    <div class="max-w-4xl mx-auto px-4 py-16">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow p-6 text-center fade-in-up">
-                <div class="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">
-                    <span>&#127908;</span>
+    <div class="bg-gray-50 py-16 px-4">
+        <div class="max-w-4xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-2xl border border-gray-100 hover:shadow-lg transition-shadow p-6 text-center fade-in-up">
+                    <div class="w-14 h-14 bg-rose-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">
+                        <span>&#127908;</span>
+                    </div>
+                    <h3 class="font-bold text-gray-800 text-lg mb-2 hero-font">Present</h3>
+                    <p class="text-gray-500 text-sm">Speed talks, long speeches, and debates to sharpen your skills.</p>
                 </div>
-                <h3 class="font-bold text-gray-800 text-lg mb-2">Present & Perform</h3>
-                <p class="text-gray-500 text-sm">Participate in speed talks, long speeches, and debates to sharpen your skills.</p>
-            </div>
-            <div class="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow p-6 text-center fade-in-up fade-in-up-delay-1">
-                <div class="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">
-                    <span>&#11088;</span>
+                <div class="bg-white rounded-2xl border border-gray-100 hover:shadow-lg transition-shadow p-6 text-center fade-in-up fade-in-up-delay-1">
+                    <div class="w-14 h-14 bg-rose-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">
+                        <span>&#11088;</span>
+                    </div>
+                    <h3 class="font-bold text-gray-800 text-lg mb-2 hero-font">Get Rated</h3>
+                    <p class="text-gray-500 text-sm">Honest feedback from peers on clarity, confidence, and content.</p>
                 </div>
-                <h3 class="font-bold text-gray-800 text-lg mb-2">Get Peer Ratings</h3>
-                <p class="text-gray-500 text-sm">Receive honest feedback from your peers on clarity, confidence, and content.</p>
-            </div>
-            <div class="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow p-6 text-center fade-in-up fade-in-up-delay-2">
-                <div class="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">
-                    <span>&#128200;</span>
+                <div class="bg-white rounded-2xl border border-gray-100 hover:shadow-lg transition-shadow p-6 text-center fade-in-up fade-in-up-delay-2">
+                    <div class="w-14 h-14 bg-rose-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">
+                        <span>&#128200;</span>
+                    </div>
+                    <h3 class="font-bold text-gray-800 text-lg mb-2 hero-font">Grow</h3>
+                    <p class="text-gray-500 text-sm">Track your scores over time with detailed profiles and history.</p>
                 </div>
-                <h3 class="font-bold text-gray-800 text-lg mb-2">Track Growth</h3>
-                <p class="text-gray-500 text-sm">See your scores improve over time with detailed profiles and event history.</p>
             </div>
         </div>
     </div>
