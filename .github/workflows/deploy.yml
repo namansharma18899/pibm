@@ -21,7 +21,7 @@ jobs:
           COMMAND_ID=$(aws ssm send-command \
             --instance-ids "${{ secrets.EC2_INSTANCE_ID }}" \
             --document-name "AWS-RunShellScript" \
-            --parameters '{"commands":["cd /home/ubuntu/pibm && eval $(ssh-agent -s) && ssh-add /home/ubuntu/.ssh/ubuntukp && git pull origin main && source .venv/bin/activate && pip install -r requirements.txt --quiet && sudo systemctl restart pibm"],"executionTimeout":["120"]}' \
+            --parameters '{"commands":["sudo -u ubuntu bash -c \"cd /home/ubuntu/pibm && git pull origin main && source .venv/bin/activate && pip install -r requirements.txt --quiet\" && sudo systemctl restart pibm"],"executionTimeout":["120"]}' \
             --comment "Deploy from GitHub Actions" \
             --query "Command.CommandId" \
             --output text)
