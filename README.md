@@ -84,3 +84,5 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for a full guide to deploying on AWS EC2 with
 ## License
 
 MIT
+
+## Special Thanks to Komal Suthar[https://github.com/19-komal] for the help & debugging support 🍁.
