@@ -4,24 +4,24 @@
 <h1 class="text-2xl font-bold mb-6">Admin Dashboard</h1>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="text-3xl font-bold text-indigo-600">{{ student_count }}</div>
+    <div class="bg-white rounded-lg shadow p-6 card-hover">
+        <div class="text-3xl font-bold text-rose-500">{{ student_count }}</div>
         <div class="text-gray-500 mt-1">Students</div>
     </div>
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="text-3xl font-bold text-indigo-600">{{ event_count }}</div>
+    <div class="bg-white rounded-lg shadow p-6 card-hover">
+        <div class="text-3xl font-bold text-rose-500">{{ event_count }}</div>
         <div class="text-gray-500 mt-1">Total Events</div>
     </div>
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="text-3xl font-bold text-indigo-600">{{ upcoming_events|length }}</div>
+    <div class="bg-white rounded-lg shadow p-6 card-hover">
+        <div class="text-3xl font-bold text-rose-500">{{ upcoming_events|length }}</div>
         <div class="text-gray-500 mt-1">Upcoming Events</div>
     </div>
 </div>
 
 <div class="flex gap-4 mb-8 flex-wrap">
-    <a href="/admin/students" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">Manage Students</a>
-    <a href="/admin/events" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">Manage Events</a>
-    <a href="/admin/events/new" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">Create Event</a>
+    <a href="/admin/students" class="bg-rose-500 text-white px-4 py-2 rounded-lg hover:bg-rose-600 btn-press">Manage Students</a>
+    <a href="/admin/events" class="bg-rose-500 text-white px-4 py-2 rounded-lg hover:bg-rose-600 btn-press">Manage Events</a>
+    <a href="/admin/events/new" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 btn-press">Create Event</a>
 </div>
 
 {% if upcoming_events %}
@@ -50,7 +50,7 @@
                 </td>
                 <td class="px-4 py-3 text-sm text-gray-500">{{ event.scheduled_date.strftime('%b %d, %Y %I:%M %p') }}</td>
                 <td class="px-4 py-3">
-                    <a href="/admin/events/{{ event.id }}/participants" class="text-indigo-600 hover:underline text-sm">Manage</a>
+                    <a href="/admin/events/{{ event.id }}/participants" class="text-rose-500 hover:underline text-sm">Manage</a>
                 </td>
             </tr>
             {% endfor %}

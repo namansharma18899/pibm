@@ -3,7 +3,7 @@
 {% block content %}
 <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold">Students</h1>
-    <a href="/admin" class="text-indigo-600 hover:underline">&larr; Back to Dashboard</a>
+    <a href="/admin" class="text-rose-500 hover:underline">&larr; Back to Dashboard</a>
 </div>
 
 <div class="bg-white rounded-lg shadow overflow-hidden overflow-x-auto">
@@ -23,7 +23,7 @@
                 {% set av = get_avatar(student.id) %}
                 <td class="px-4 py-3 flex items-center gap-2">
                     <div class="w-8 h-8 rounded-full flex items-center justify-center text-lg shrink-0" style="background-color: {{ av.color }}">{{ av.emoji }}</div>
-                    <a href="/profile/{{ student.id }}" class="text-indigo-600 hover:underline">{{ student.name }}</a>
+                    <a href="/profile/{{ student.id }}" class="text-rose-500 hover:underline">{{ student.name }}</a>
                 </td>
                 <td class="px-4 py-3 text-sm text-gray-500">
                     <span class="inline-block max-w-[150px] md:max-w-none truncate">{{ student.email }}</span>
@@ -40,7 +40,7 @@
                     <form method="post" action="/admin/students/{{ student.id }}/role" class="inline">
                         {% if student.role == 'student' %}
                             <input type="hidden" name="role" value="admin">
-                            <button type="submit" class="text-sm text-indigo-600 hover:underline">Make Admin</button>
+                            <button type="submit" class="text-sm text-rose-500 hover:underline">Make Admin</button>
                         {% else %}
                             <input type="hidden" name="role" value="student">
                             <button type="submit" class="text-sm text-red-600 hover:underline">Remove Admin</button>

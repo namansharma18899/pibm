@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}Rate {{ participation.student.name }}{% endblock %}
+{% block title %}Feedback for {{ participation.student.name }}{% endblock %}
 {% block content %}
 <div class="mb-6">
-    <a href="/events/{{ event.id }}" class="text-indigo-600 hover:underline text-sm">&larr; Back to {{ event.title }}</a>
-    <h1 class="text-2xl font-bold mt-2">Rate {{ participation.student.name }}</h1>
+    <a href="/events/{{ event.id }}" class="text-rose-500 hover:underline text-sm">&larr; Back to {{ event.title }}</a>
+    <h1 class="text-2xl font-bold mt-2">Feedback for {{ participation.student.name }}</h1>
     <p class="text-gray-500">{{ event.title }} &middot; {{ event.event_type_display }}</p>
 </div>
 
@@ -44,8 +44,8 @@
                     <input type="radio" name="{{ field }}" value="{{ i }}" class="sr-only peer"
                            {% if existing and existing[field] == i %}checked{% endif %}>
                     <div class="text-center py-2 rounded-lg border cursor-pointer
-                                peer-checked:bg-indigo-600 peer-checked:text-white peer-checked:border-indigo-600
-                                hover:bg-indigo-50 transition">
+                                peer-checked:bg-rose-500 peer-checked:text-white peer-checked:border-rose-500
+                                hover:bg-rose-50 transition">
                         {{ i }}
                     </div>
                 </label>
@@ -55,8 +55,8 @@
         {% endfor %}
         {% endif %}
 
-        <button type="submit" class="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 font-medium">
-            {{ 'Update Rating' if existing else 'Submit Rating' }}
+        <button type="submit" class="w-full bg-rose-500 text-white px-6 py-3 rounded-lg hover:bg-rose-600 font-medium btn-press">
+            {{ 'Update Feedback' if existing else 'Submit Feedback' }}
         </button>
     </form>
 </div>

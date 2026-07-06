@@ -14,16 +14,16 @@
 
 {% if can_view_stats and stats %}
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-    <div class="bg-white rounded-lg shadow p-6 text-center">
-        <div class="text-3xl font-bold text-indigo-600 counter" data-target="{{ stats.total_events }}">0</div>
+    <div class="bg-white rounded-lg shadow p-6 text-center card-hover">
+        <div class="text-3xl font-bold text-rose-500 counter" data-target="{{ stats.total_events }}">0</div>
         <div class="text-gray-500 mt-1">Events</div>
     </div>
-    <div class="bg-white rounded-lg shadow p-6 text-center">
-        <div class="text-3xl font-bold text-indigo-600 counter" data-target="{{ stats.attended_events }}">0</div>
+    <div class="bg-white rounded-lg shadow p-6 text-center card-hover">
+        <div class="text-3xl font-bold text-rose-500 counter" data-target="{{ stats.attended_events }}">0</div>
         <div class="text-gray-500 mt-1">Attended</div>
     </div>
-    <div class="bg-white rounded-lg shadow p-6 text-center">
-        <div class="text-3xl font-bold text-indigo-600">
+    <div class="bg-white rounded-lg shadow p-6 text-center card-hover">
+        <div class="text-3xl font-bold text-rose-500">
             {% if stats.overall_avg is not none %}
                 <span class="skill-score" data-target="{{ "%.1f"|format(stats.overall_avg) }}">0.0</span>/5
             {% else %}-{% endif %}
@@ -39,10 +39,10 @@
     <div class="mb-4">
         <div class="flex justify-between text-sm mb-1">
             <span class="font-medium">Speed Talks</span>
-            <span class="text-indigo-600 font-bold skill-score" data-target="{{ "%.1f"|format(stats.speed_talk_avg) }}">0.0/5</span>
+            <span class="text-rose-500 font-bold skill-score" data-target="{{ "%.1f"|format(stats.speed_talk_avg) }}">0.0/5</span>
         </div>
         <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-            <div class="skill-bar bg-indigo-600 h-3 rounded-full" data-width="{{ (stats.speed_talk_avg / 5 * 100)|round }}" style="width: 0%"></div>
+            <div class="skill-bar bg-rose-500 h-3 rounded-full" data-width="{{ (stats.speed_talk_avg / 5 * 100)|round }}" style="width: 0%"></div>
         </div>
     </div>
     {% endif %}
@@ -52,10 +52,10 @@
     <div class="mb-4 last:mb-0">
         <div class="flex justify-between text-sm mb-1">
             <span class="font-medium">{{ labels[field] }}</span>
-            <span class="text-indigo-600 font-bold skill-score" data-target="{{ "%.1f"|format(avg) }}">0.0/5</span>
+            <span class="text-rose-500 font-bold skill-score" data-target="{{ "%.1f"|format(avg) }}">0.0/5</span>
         </div>
         <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-            <div class="skill-bar bg-indigo-600 h-3 rounded-full" data-width="{{ (avg / 5 * 100)|round }}" style="width: 0%"></div>
+            <div class="skill-bar bg-rose-500 h-3 rounded-full" data-width="{{ (avg / 5 * 100)|round }}" style="width: 0%"></div>
         </div>
     </div>
     {% endfor %}
@@ -79,7 +79,7 @@
             {% for item in stats.event_history %}
             <tr>
                 <td class="px-4 py-3">
-                    <a href="/events/{{ item.event.id }}" class="text-indigo-600 hover:underline">{{ item.event.title }}</a>
+                    <a href="/events/{{ item.event.id }}" class="text-rose-500 hover:underline">{{ item.event.title }}</a>
                 </td>
                 <td class="px-4 py-3 hidden md:table-cell">
                     <span class="px-2 py-0.5 rounded-full text-xs font-medium
@@ -92,7 +92,7 @@
                 <td class="px-4 py-3 text-sm text-gray-500">{{ item.event.scheduled_date.strftime('%b %d, %Y') }}</td>
                 <td class="px-4 py-3">
                     {% if item.score is not none %}
-                        <span class="font-bold text-indigo-600">{{ "%.1f"|format(item.score) }}/5</span>
+                        <span class="font-bold text-rose-500">{{ "%.1f"|format(item.score) }}/5</span>
                     {% else %}
                         <span class="text-gray-400">-</span>
                     {% endif %}

@@ -2,29 +2,67 @@
 {% block title %}Welcome{% endblock %}
 {% block content %}
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
-    .hero-font { font-family: 'Space Mono', monospace; }
     .topic-pill {
         position: absolute;
         background: white;
         border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        padding: 8px 18px;
-        font-size: 0.85rem;
+        border-radius: 14px;
+        padding: 12px 24px;
+        font-size: 0.95rem;
         color: #374151;
         white-space: nowrap;
         box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-        transition: transform 0.3s, box-shadow 0.3s;
+        cursor: pointer;
+        user-select: none;
+        z-index: 10;
     }
-    .topic-pill:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    @media (max-width: 767px) {
+        .topic-pill {
+            padding: 6px 14px;
+            font-size: 0.75rem;
+            border-radius: 10px;
+        }
     }
     .topic-pill.highlight {
         background: #ffe4e6;
         border-color: #fda4af;
         color: #e11d48;
         font-weight: 600;
+    }
+    .topic-pill.paused {
+        box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        transform: scale(1.05);
+        z-index: 20;
+    }
+    .pill-tooltip {
+        position: absolute;
+        background: #1f2937;
+        color: white;
+        font-size: 0.75rem;
+        line-height: 1.4;
+        padding: 8px 14px;
+        border-radius: 10px;
+        max-width: 220px;
+        white-space: normal;
+        z-index: 30;
+        pointer-events: none;
+        opacity: 0;
+        transform: translateY(6px);
+        transition: opacity 0.2s, transform 0.2s;
+    }
+    .pill-tooltip.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    .pill-tooltip::before {
+        content: '';
+        position: absolute;
+        top: -5px;
+        left: 20px;
+        width: 10px;
+        height: 10px;
+        background: #1f2937;
+        transform: rotate(45deg);
     }
     .dashed-accent {
         border: 2px dashed #e11d48;
@@ -35,34 +73,11 @@
 </style>
 
 <div class="-mx-4 -mt-6">
-    <div class="relative bg-white overflow-hidden" style="min-height: 80vh;">
+    <div class="relative bg-white overflow-hidden" id="hero-area" style="min-height: 80vh;">
 
-        <div class="hidden md:block">
-            <span class="topic-pill" style="top: 8%; right: 8%;">Presentation</span>
-            <span class="topic-pill" style="top: 15%; left: 5%;">Body Language</span>
-            <span class="topic-pill highlight" style="top: 28%; left: 8%;">Speed Talk</span>
-            <span class="topic-pill" style="top: 22%; right: 22%;">Clarity</span>
-            <span class="topic-pill" style="top: 12%; right: 35%;">Peer Review</span>
-            <span class="topic-pill" style="top: 40%; left: 3%;">Storytelling</span>
-            <span class="topic-pill" style="top: 55%; left: 6%;">Eye Contact</span>
-            <span class="topic-pill" style="top: 38%; right: 5%;">Debate</span>
-            <span class="topic-pill" style="top: 52%; right: 10%;">Content</span>
-            <span class="topic-pill" style="top: 65%; right: 3%;">Vocal Tone</span>
-            <span class="topic-pill" style="top: 68%; left: 2%;">Vocabulary</span>
-            <span class="topic-pill" style="top: 78%; right: 18%;">Long Speech</span>
-            <span class="topic-pill" style="top: 80%; left: 12%;">Persuasion</span>
-            <span class="topic-pill" style="top: 48%; right: 28%;">Feedback</span>
-            <span class="topic-pill" style="top: 88%; right: 35%;">Stage Presence</span>
-            <span class="topic-pill" style="top: 85%; left: 30%;">Improvisation</span>
-        </div>
+        <div id="pills-container"></div>
 
-        <div class="relative flex flex-col items-center justify-center text-center px-4" style="min-height: 80vh;">
-            <div class="fade-in-up mb-2">
-                <span class="hero-font text-lg md:text-xl font-bold tracking-tight">
-                    s<span class="text-rose-500">:</span>
-                </span>
-            </div>
-
+        <div class="relative flex flex-col items-center justify-center text-center px-4" style="min-height: 80vh; z-index: 5;">
             <div class="fade-in-up fade-in-up-delay-1">
                 <h1 class="hero-font text-4xl md:text-6xl lg:text-7xl font-bold text-gray-900 leading-tight">
                     <span class="dashed-accent">Speak with</span><br class="md:hidden">
@@ -113,4 +128,195 @@
         </div>
     </div>
 </div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+    var container = document.getElementById('pills-container');
+    if (!container) return;
+    var hero = document.getElementById('hero-area');
+
+    var pills = [
+        { text: 'Presentation', desc: 'The art of delivering ideas clearly and engagingly to an audience.', highlight: false },
+        { text: 'Body Language', desc: 'Non-verbal cues like gestures, posture, and facial expressions that reinforce your message.', highlight: false },
+        { text: 'Speed Talk', desc: 'A short, timed speech (2-3 minutes) to practice concise and impactful delivery.', highlight: true },
+        { text: 'Clarity', desc: 'How clearly your words, ideas, and structure come across to listeners.', highlight: false },
+        { text: 'Peer Review', desc: 'Constructive feedback from fellow students to help you identify strengths and gaps.', highlight: false },
+        { text: 'Storytelling', desc: 'Using narrative structure and anecdotes to make your speech memorable.', highlight: false },
+        { text: 'Eye Contact', desc: 'Connecting with your audience by looking at them directly and naturally.', highlight: false },
+        { text: 'Debate', desc: 'A structured argument format where speakers defend opposing sides of a topic.', highlight: false },
+        { text: 'Content', desc: 'The substance and quality of what you say — research, facts, and supporting points.', highlight: false },
+        { text: 'Vocal Tone', desc: 'Variations in pitch, pace, and volume that keep your audience engaged.', highlight: false },
+        { text: 'Vocabulary', desc: 'Choosing precise, powerful words that match your audience and topic.', highlight: false },
+        { text: 'Long Speech', desc: 'An extended presentation (5-10 minutes) rated on multiple skill dimensions.', highlight: false },
+        { text: 'Persuasion', desc: 'The ability to convince your audience using logic, emotion, and credibility.', highlight: false },
+        { text: 'Feedback', desc: 'Scores and comments you receive after each event to track your improvement.', highlight: false },
+        { text: 'Stage Presence', desc: 'Your overall command of the stage — confidence, movement, and energy.', highlight: false },
+        { text: 'Improvisation', desc: 'Speaking on the spot without preparation, building quick-thinking skills.', highlight: false }
+    ];
+
+    var heroW, heroH;
+    var pillEls = [];
+    var tooltip = null;
+    var activePill = null;
+
+    function createTooltip() {
+        tooltip = document.createElement('div');
+        tooltip.className = 'pill-tooltip';
+        hero.appendChild(tooltip);
+    }
+
+    function showTooltip(el, desc) {
+        var rect = el.getBoundingClientRect();
+        var heroRect = hero.getBoundingClientRect();
+        tooltip.textContent = desc;
+        tooltip.classList.add('visible');
+        var tx = rect.left - heroRect.left;
+        var ty = rect.bottom - heroRect.top + 8;
+        if (tx + 220 > heroW) tx = heroW - 230;
+        if (tx < 10) tx = 10;
+        tooltip.style.left = tx + 'px';
+        tooltip.style.top = ty + 'px';
+    }
+
+    function hideTooltip() {
+        tooltip.classList.remove('visible');
+    }
+
+    function initPills() {
+        heroW = hero.offsetWidth;
+        heroH = hero.offsetHeight;
+        createTooltip();
+
+        var isMobileInit = heroW < 768;
+        var safeL = heroW * (isMobileInit ? 0.05 : 0.2);
+        var safeR = heroW * (isMobileInit ? 0.95 : 0.8);
+        var safeT = heroH * (isMobileInit ? 0.15 : 0.2);
+        var safeB = heroH * (isMobileInit ? 0.8 : 0.75);
+        var margin = 10;
+
+        pills.forEach(function(p, i) {
+            var el = document.createElement('span');
+            el.className = 'topic-pill' + (p.highlight ? ' highlight' : '');
+            el.textContent = p.text;
+            container.appendChild(el);
+
+            var x, y, tries = 0;
+            do {
+                x = margin + (heroW - margin * 2 - 140) * Math.random();
+                y = margin + (heroH - margin * 2 - 50) * Math.random();
+                tries++;
+            } while (tries < 50 && x + 140 > safeL && x < safeR && y + 50 > safeT && y < safeB);
+
+            var speed = 15 + Math.random() * 25;
+            var angle = Math.random() * Math.PI * 2;
+            var dx = Math.cos(angle) * speed;
+            var dy = Math.sin(angle) * speed;
+
+            var obj = { el: el, x: x, y: y, dx: dx, dy: dy, paused: false, data: p, w: 0, h: 0 };
+            pillEls.push(obj);
+
+            el.addEventListener('mouseenter', function() {
+                obj.paused = true;
+                el.classList.add('paused');
+            });
+            el.addEventListener('mouseleave', function() {
+                obj.paused = false;
+                el.classList.remove('paused');
+                if (activePill === obj) {
+                    activePill = null;
+                    hideTooltip();
+                }
+            });
+            el.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (activePill === obj) {
+                    activePill = null;
+                    hideTooltip();
+                } else {
+                    activePill = obj;
+                    showTooltip(el, p.desc);
+                }
+            });
+        });
+
+        requestAnimationFrame(function() {
+            pillEls.forEach(function(o) {
+                o.w = o.el.offsetWidth;
+                o.h = o.el.offsetHeight;
+                o.el.style.left = o.x + 'px';
+                o.el.style.top = o.y + 'px';
+            });
+        });
+    }
+
+    document.addEventListener('click', function() {
+        if (activePill) {
+            activePill = null;
+            hideTooltip();
+        }
+    });
+
+    var lastTime = 0;
+    function animate(time) {
+        if (!lastTime) lastTime = time;
+        var dt = Math.min((time - lastTime) / 1000, 0.05);
+        lastTime = time;
+
+        heroW = hero.offsetWidth;
+        heroH = hero.offsetHeight;
+
+        var isMobile = heroW < 768;
+        var cxL = heroW * (isMobile ? 0.05 : 0.2);
+        var cxR = heroW * (isMobile ? 0.95 : 0.8);
+        var cyT = heroH * (isMobile ? 0.15 : 0.2);
+        var cyB = heroH * (isMobile ? 0.8 : 0.75);
+
+        pillEls.forEach(function(o) {
+            if (o.paused) return;
+
+            o.x += o.dx * dt;
+            o.y += o.dy * dt;
+
+            if (o.x < 0) { o.x = 0; o.dx = Math.abs(o.dx); }
+            if (o.x + o.w > heroW) { o.x = heroW - o.w; o.dx = -Math.abs(o.dx); }
+            if (o.y < 0) { o.y = 0; o.dy = Math.abs(o.dy); }
+            if (o.y + o.h > heroH) { o.y = heroH - o.h; o.dy = -Math.abs(o.dy); }
+
+            var pr = o.x + o.w;
+            var pb = o.y + o.h;
+            if (pr > cxL && o.x < cxR && pb > cyT && o.y < cyB) {
+                var fromL = pr - cxL;
+                var fromR = cxR - o.x;
+                var fromT = pb - cyT;
+                var fromB = cyB - o.y;
+                var minH = Math.min(fromL, fromR);
+                var minV = Math.min(fromT, fromB);
+                if (minH < minV) {
+                    if (fromL < fromR) { o.x = cxL - o.w - 1; o.dx = -Math.abs(o.dx); }
+                    else { o.x = cxR + 1; o.dx = Math.abs(o.dx); }
+                } else {
+                    if (fromT < fromB) { o.y = cyT - o.h - 1; o.dy = -Math.abs(o.dy); }
+                    else { o.y = cyB + 1; o.dy = Math.abs(o.dy); }
+                }
+            }
+
+            o.el.style.left = o.x + 'px';
+            o.el.style.top = o.y + 'px';
+        });
+
+        if (activePill) {
+            showTooltip(activePill.el, activePill.data.desc);
+        }
+
+        requestAnimationFrame(animate);
+    }
+
+    initPills();
+    requestAnimationFrame(animate);
+})();
+</script>
 {% endblock %}

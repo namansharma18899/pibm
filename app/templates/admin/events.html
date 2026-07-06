@@ -4,8 +4,8 @@
 <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold">Events</h1>
     <div class="flex gap-3">
-        <a href="/admin" class="text-indigo-600 hover:underline">&larr; Dashboard</a>
-        <a href="/admin/events/new" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">+ New Event</a>
+        <a href="/admin" class="text-rose-500 hover:underline">&larr; Dashboard</a>
+        <a href="/admin/events/new" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 btn-press">+ New Event</a>
     </div>
 </div>
 
@@ -46,8 +46,8 @@
                 <td class="px-4 py-3 text-sm hidden md:table-cell">{{ event.participations|length }}</td>
                 <td class="px-4 py-3">
                     <div class="flex gap-2 flex-wrap">
-                        <a href="/admin/events/{{ event.id }}/participants" class="text-sm text-indigo-600 hover:underline">Speakers</a>
-                        <a href="/admin/events/{{ event.id }}/attendance" class="text-sm text-indigo-600 hover:underline">Attendance</a>
+                        <a href="/admin/events/{{ event.id }}/participants" class="text-sm text-rose-500 hover:underline">Speakers</a>
+                        <a href="/admin/events/{{ event.id }}/attendance" class="text-sm text-rose-500 hover:underline">Attendance</a>
                         <a href="/admin/events/{{ event.id }}/edit" class="text-sm text-gray-600 hover:underline">Edit</a>
 
                         {% if event.status == 'upcoming' %}

@@ -57,3 +57,72 @@
 .float-slow { animation: float 4s ease-in-out infinite; }
 .float-slow-delay { animation: float 4s ease-in-out 1s infinite; }
 .float-slow-delay-2 { animation: float 4s ease-in-out 2s infinite; }
+
+/* Card hover lift */
+.card-hover {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* Button press */
+.btn-press {
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+.btn-press:active {
+    transform: scale(0.96);
+}
+.btn-press:hover {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+/* Table row stagger entrance */
+.stagger-row {
+    animation: fadeInUp 0.4s ease-out both;
+}
+.stagger-row:nth-child(1) { animation-delay: 0.05s; }
+.stagger-row:nth-child(2) { animation-delay: 0.1s; }
+.stagger-row:nth-child(3) { animation-delay: 0.15s; }
+.stagger-row:nth-child(4) { animation-delay: 0.2s; }
+.stagger-row:nth-child(5) { animation-delay: 0.25s; }
+.stagger-row:nth-child(6) { animation-delay: 0.3s; }
+.stagger-row:nth-child(7) { animation-delay: 0.35s; }
+.stagger-row:nth-child(8) { animation-delay: 0.4s; }
+.stagger-row:nth-child(9) { animation-delay: 0.45s; }
+.stagger-row:nth-child(10) { animation-delay: 0.5s; }
+
+/* Link hover underline grow */
+.link-hover {
+    position: relative;
+    text-decoration: none;
+}
+.link-hover::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #f43f5e;
+    transition: width 0.25s ease;
+}
+.link-hover:hover::after {
+    width: 100%;
+}
+
+/* Flash message entrance */
+.flash-enter {
+    animation: slideDown 0.4s ease-out both;
+}
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
