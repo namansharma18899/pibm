@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -22,6 +22,8 @@ class User(Base):
     participations: Mapped[list["Participation"]] = relationship(back_populates="student")
     ratings_given: Mapped[list["Rating"]] = relationship(back_populates="rater")
     events_created: Mapped[list["Event"]] = relationship(back_populates="created_by")
+    video_analyses: Mapped[list["VideoAnalysis"]] = relationship(back_populates="user")
+    credit: Mapped["UserCredit | None"] = relationship(back_populates="user", uselist=False)
 
 
 class Event(Base):
@@ -76,6 +78,7 @@ class Participation(Base):
     ratings: Mapped[list["Rating"]] = relationship(
         back_populates="participation", cascade="all, delete-orphan"
     )
+    video_analyses: Mapped[list["VideoAnalysis"]] = relationship(back_populates="participation")
 
     @property
     def average_score(self) -> float | None:
@@ -139,3 +142,54 @@ class Rating(Base):
             if v is not None
         ]
         return sum(vals) / len(vals) if vals else None
+
+
+class VideoAnalysis(Base):
+    __tablename__ = "video_analyses"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
+    participation_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("participations.id"), nullable=True
+    )
+    filename: Mapped[str | None] = mapped_column(String, nullable=True)
+    original_filename: Mapped[str] = mapped_column(String, nullable=False)
+    file_size: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String, nullable=False, default="processing")
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    fluency: Mapped[float | None] = mapped_column(Float, nullable=True)
+    word_choice: Mapped[float | None] = mapped_column(Float, nullable=True)
+    sentence_formation: Mapped[float | None] = mapped_column(Float, nullable=True)
+    clarity: Mapped[float | None] = mapped_column(Float, nullable=True)
+    confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+    overall_score: Mapped[float | None] = mapped_column(Float, nullable=True)
+    summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    strengths: Mapped[str | None] = mapped_column(Text, nullable=True)
+    improvements: Mapped[str | None] = mapped_column(Text, nullable=True)
+    credits_used: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    analysis_data: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
+
+    user: Mapped["User"] = relationship(back_populates="video_analyses")
+    participation: Mapped["Participation | None"] = relationship(back_populates="video_analyses")
+
+
+class UserCredit(Base):
+    __tablename__ = "user_credits"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
+    balance: Mapped[int] = mapped_column(Integer, nullable=False, default=100)
+    last_reset_month: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
+
+    user: Mapped["User"] = relationship(back_populates="credit")

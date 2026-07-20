@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% block title %}Upload Video{% endblock %}
+{% block content %}
+<div class="mb-6">
+    <a href="{% if event %}/events/{{ event.id }}{% else %}/dashboard{% endif %}" class="text-rose-500 hover:underline text-sm">&larr; Back</a>
+    <h1 class="text-2xl font-bold mt-2">
+        {% if event %}Upload Video for {{ event.title }}{% else %}Upload Practice Video{% endif %}
+    </h1>
+    {% if event %}
+    <div class="flex gap-2 mt-1">
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium
+            {% if event.event_type == 'speed_talk' %}bg-blue-100 text-blue-800
+            {% elif event.event_type == 'long_speech' %}bg-purple-100 text-purple-800
+            {% else %}bg-orange-100 text-orange-800{% endif %}">
+            {{ event.event_type_display }}
+        </span>
+        <span class="text-sm text-gray-500">{{ event.scheduled_date.strftime('%b %d, %Y') }}</span>
+    </div>
+    {% endif %}
+</div>
+
+<div class="bg-white rounded-lg shadow p-4 max-w-xl mb-4">
+    <div class="flex items-center justify-between">
+        <div>
+            <span class="text-sm text-gray-500">Credits remaining:</span>
+            <span class="font-bold text-lg {% if credit_balance <= 5 %}text-red-500{% elif credit_balance <= 20 %}text-amber-500{% else %}text-rose-500{% endif %}">
+                {{ credit_balance }}
+            </span>
+        </div>
+        <div>
+            <span class="text-sm text-gray-500">Uploads today:</span>
+            <span class="font-bold text-lg {% if daily_remaining <= 0 %}text-red-500{% else %}text-rose-500{% endif %}">
+                {{ daily_remaining }} left
+            </span>
+        </div>
+    </div>
+    <div id="credit-cost-display" class="hidden mt-2 text-sm text-gray-600">
+        Estimated cost: <span id="credit-cost" class="font-semibold text-rose-500"></span>
+    </div>
+    <p class="text-xs text-gray-400 mt-2">1 credit per MB of video (rounded up). Credits reset monthly.</p>
+</div>
+
+<div class="bg-white rounded-lg shadow p-6 max-w-xl">
+    <form id="upload-form" action="/video/upload" method="POST" enctype="multipart/form-data">
+        {% if participation %}
+        <input type="hidden" name="participation_id" value="{{ participation.id }}">
+        {% endif %}
+
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Select Video</label>
+            <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-rose-400 transition-colors cursor-pointer">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                </svg>
+                <p class="mt-2 text-sm text-gray-600" id="file-label">Click to select or drag and drop</p>
+                <p class="mt-1 text-xs text-gray-400">MP4, WebM, or MOV up to 50MB</p>
+                <input type="file" name="video_file" id="video-input" accept=".mp4,.webm,.mov" class="hidden">
+            </div>
+        </div>
+
+        <div id="file-preview" class="hidden mb-6 p-3 bg-gray-50 rounded-lg flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span id="file-name" class="text-sm text-gray-700 truncate max-w-xs"></span>
+                <span id="file-size" class="text-xs text-gray-400"></span>
+            </div>
+            <button type="button" id="clear-file" class="text-gray-400 hover:text-red-500">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <div id="error-msg" class="hidden mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm"></div>
+
+        <button type="submit" id="submit-btn" class="w-full bg-rose-500 text-white py-3 rounded-lg hover:bg-rose-600 btn-press font-medium disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            Upload & Analyze
+        </button>
+    </form>
+</div>
+
+<div id="loading-overlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-xl p-8 max-w-sm mx-4 text-center">
+        <div class="w-16 h-16 border-4 border-rose-200 border-t-rose-500 rounded-full spinner mx-auto"></div>
+        <h3 class="text-lg font-bold mt-4">Analyzing Your Video</h3>
+        <p class="text-gray-500 text-sm mt-2">Our AI is watching your speech and evaluating your performance. This may take up to a minute...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+    var input = document.getElementById('video-input');
+    var zone = document.getElementById('drop-zone');
+    var preview = document.getElementById('file-preview');
+    var nameEl = document.getElementById('file-name');
+    var sizeEl = document.getElementById('file-size');
+    var label = document.getElementById('file-label');
+    var errorMsg = document.getElementById('error-msg');
+    var submitBtn = document.getElementById('submit-btn');
+    var form = document.getElementById('upload-form');
+    var overlay = document.getElementById('loading-overlay');
+    var maxSize = 50 * 1024 * 1024;
+    var allowed = ['.mp4', '.webm', '.mov'];
+
+    zone.addEventListener('click', function() { input.click(); });
+    zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('border-rose-400', 'bg-rose-50'); });
+    zone.addEventListener('dragleave', function() { zone.classList.remove('border-rose-400', 'bg-rose-50'); });
+    zone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        zone.classList.remove('border-rose-400', 'bg-rose-50');
+        if (e.dataTransfer.files.length) { input.files = e.dataTransfer.files; handleFile(); }
+    });
+    input.addEventListener('change', handleFile);
+
+    document.getElementById('clear-file').addEventListener('click', function() {
+        input.value = '';
+        preview.classList.add('hidden');
+        zone.classList.remove('hidden');
+        submitBtn.disabled = true;
+        errorMsg.classList.add('hidden');
+        var costDisplay = document.getElementById('credit-cost-display');
+        if (costDisplay) costDisplay.classList.add('hidden');
+    });
+
+    function handleFile() {
+        errorMsg.classList.add('hidden');
+        if (!input.files.length) return;
+        var file = input.files[0];
+        var ext = '.' + file.name.split('.').pop().toLowerCase();
+        if (allowed.indexOf(ext) === -1) {
+            errorMsg.textContent = 'Invalid file type. Please upload MP4, WebM, or MOV.';
+            errorMsg.classList.remove('hidden');
+            input.value = '';
+            return;
+        }
+        if (file.size > maxSize) {
+            errorMsg.textContent = 'File is too large. Maximum size is 50MB.';
+            errorMsg.classList.remove('hidden');
+            input.value = '';
+            return;
+        }
+        nameEl.textContent = file.name;
+        sizeEl.textContent = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+        var costMB = Math.max(1, Math.ceil(file.size / (1024 * 1024)));
+        var costEl = document.getElementById('credit-cost');
+        var costDisplay = document.getElementById('credit-cost-display');
+        if (costEl && costDisplay) {
+            costEl.textContent = costMB + ' credit' + (costMB !== 1 ? 's' : '');
+            costDisplay.classList.remove('hidden');
+        }
+        zone.classList.add('hidden');
+        preview.classList.remove('hidden');
+        submitBtn.disabled = false;
+    }
+
+    form.addEventListener('submit', function() {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Uploading...';
+        overlay.classList.remove('hidden');
+    });
+})();
+</script>
+{% endblock %}

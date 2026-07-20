@@ -1,13 +1,18 @@
+import logging
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.database import get_db
 from app.dependencies import get_flash, require_admin, set_flash
 from app.models import Event, Participation, User
+from app.services.credits import admin_set_credits, get_daily_upload_count, get_user_credit
 from app.templating import templates
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin")
 
@@ -73,6 +78,7 @@ async def change_role(
     if target.id == user.id:
         set_flash(request, "Cannot change your own role", "error")
         return RedirectResponse(url="/admin/students", status_code=303)
+    logger.info("Role changed — admin_id=%d target_id=%d old_role=%s new_role=%s", user.id, target.id, target.role, role)
     target.role = role
     db.commit()
     set_flash(request, f"{target.name} is now {role}")
@@ -133,6 +139,7 @@ async def create_event(
     )
     db.add(event)
     db.commit()
+    logger.info("Event created — id=%d title=%s type=%s by_admin=%d", event.id, title, event_type, user.id)
     set_flash(request, f"Event '{title}' created")
     return RedirectResponse(url=f"/admin/events/{event.id}/participants", status_code=303)
 
@@ -181,6 +188,7 @@ async def edit_event(
     event.event_type = event_type
     event.scheduled_date = dt
     db.commit()
+    logger.info("Event updated — id=%d title=%s by_admin=%d", event.id, title, user.id)
     set_flash(request, f"Event '{title}' updated")
     return RedirectResponse(url="/admin/events", status_code=303)
 
@@ -196,6 +204,7 @@ async def delete_event(
     if not event:
         set_flash(request, "Event not found", "error")
         return RedirectResponse(url="/admin/events", status_code=303)
+    logger.info("Event deleted — id=%d title=%s by_admin=%d", event.id, event.title, user.id)
     event.is_deleted = True
     db.commit()
     set_flash(request, f"Event '{event.title}' deleted")
@@ -217,6 +226,7 @@ async def change_event_status(
     if not event:
         set_flash(request, "Event not found", "error")
         return RedirectResponse(url="/admin/events", status_code=303)
+    logger.info("Event status changed — id=%d status=%s by_admin=%d", event.id, status, user.id)
     event.status = status
     db.commit()
     set_flash(request, f"Event status changed to {status}")
@@ -332,5 +342,70 @@ async def update_attendance(
     for p in event.participations:
         p.attended = str(p.id) in attended_ids
     db.commit()
+    logger.info("Attendance updated — event_id=%d marked=%d/%d by_admin=%d",
+                event_id, len(attended_ids), len(event.participations), user.id)
     set_flash(request, "Attendance updated")
     return RedirectResponse(url=f"/admin/events/{event_id}/attendance", status_code=303)
+
+
+@router.get("/credits", response_class=HTMLResponse)
+async def manage_credits(
+    request: Request,
+    user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+    flash: dict | None = Depends(get_flash),
+):
+    students = db.query(User).filter(User.role == "student").order_by(User.name).all()
+    student_credits = []
+    for student in students:
+        credit = get_user_credit(db, student.id)
+        daily_count = get_daily_upload_count(db, student.id)
+        student_credits.append({
+            "student": student,
+            "credit": credit,
+            "daily_count": daily_count,
+        })
+    db.commit()
+    return templates.TemplateResponse(
+        "admin/credits.html",
+        {
+            "request": request,
+            "user": user,
+            "flash": flash,
+            "student_credits": student_credits,
+            "monthly_credits": settings.monthly_credits,
+            "daily_limit": settings.daily_video_limit,
+        },
+    )
+
+
+@router.post("/credits/{user_id}")
+async def adjust_credits(
+    request: Request,
+    user_id: int,
+    user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    form = await request.form()
+    try:
+        new_balance = int(form.get("new_balance", 0))
+    except (ValueError, TypeError):
+        set_flash(request, "Invalid credit value", "error")
+        return RedirectResponse(url="/admin/credits", status_code=303)
+
+    if new_balance < 0:
+        set_flash(request, "Credit balance cannot be negative", "error")
+        return RedirectResponse(url="/admin/credits", status_code=303)
+
+    target = db.query(User).filter(User.id == user_id).first()
+    if not target:
+        set_flash(request, "User not found", "error")
+        return RedirectResponse(url="/admin/credits", status_code=303)
+
+    old_credit = get_user_credit(db, user_id)
+    old_balance = old_credit.balance
+    admin_set_credits(db, user_id, new_balance)
+    db.commit()
+    logger.info("Credits adjusted — admin_id=%d target_id=%d old=%d new=%d", user.id, user_id, old_balance, new_balance)
+    set_flash(request, f"Credits for {target.name} updated to {new_balance}")
+    return RedirectResponse(url="/admin/credits", status_code=303)

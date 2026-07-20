@@ -15,7 +15,7 @@
                 <h1 class="text-2xl md:text-3xl font-bold text-white">{{ user.name }}</h1>
             </div>
         </div>
-        <div class="grid grid-cols-3 gap-3 mt-5">
+        <div class="grid grid-cols-4 gap-3 mt-5">
             <div class="bg-white/10 backdrop-blur rounded-xl px-4 py-3 text-center border border-white/10">
                 <div class="text-2xl font-bold text-white">{{ total_participations }}</div>
                 <div class="text-rose-200 text-xs mt-0.5">Events</div>
@@ -28,9 +28,93 @@
                 <div class="text-2xl font-bold text-white">{{ upcoming_events|length }}</div>
                 <div class="text-rose-200 text-xs mt-0.5">Upcoming</div>
             </div>
+            <div class="bg-white/10 backdrop-blur rounded-xl px-4 py-3 text-center border border-white/10">
+                <div class="text-2xl font-bold text-white">{{ credit_balance }}</div>
+                <div class="text-rose-200 text-xs mt-0.5">Credits</div>
+            </div>
         </div>
     </div>
 </div>
+
+{% if news_sections %}
+<div class="mb-8">
+    <div class="relative overflow-hidden bg-gradient-to-r from-slate-800 via-slate-900 to-slate-800 rounded-2xl shadow-lg p-5 md:p-6 mb-4">
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full -translate-y-1/2 translate-x-1/3"></div>
+            <div class="absolute bottom-0 left-0 w-40 h-40 bg-rose-500/10 rounded-full translate-y-1/2 -translate-x-1/4"></div>
+        </div>
+        <div class="relative flex items-center justify-between">
+            <div>
+                <h2 class="text-xl md:text-2xl font-bold text-white">Latest News</h2>
+                <p class="text-slate-400 text-sm mt-1">Stay informed with curated industry updates</p>
+            </div>
+            <div class="flex gap-1.5">
+                <div class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></div>
+                <div class="w-2 h-2 rounded-full bg-purple-400 animate-pulse" style="animation-delay: 0.2s"></div>
+                <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" style="animation-delay: 0.4s"></div>
+            </div>
+        </div>
+    </div>
+    {% set section_styles = {
+        'business': {'gradient': 'from-blue-600 to-blue-700', 'dot': 'bg-blue-400'},
+        'ai_tech': {'gradient': 'from-purple-600 to-purple-700', 'dot': 'bg-purple-400'},
+        'marketing': {'gradient': 'from-emerald-600 to-emerald-700', 'dot': 'bg-emerald-400'},
+        'finance': {'gradient': 'from-amber-600 to-amber-700', 'dot': 'bg-amber-400'},
+        'misc': {'gradient': 'from-rose-600 to-rose-700', 'dot': 'bg-rose-400'},
+    } %}
+    {% macro render_articles(articles) %}
+        {% if articles %}
+        {% for article in articles %}
+        <a href="{{ article.url }}" target="_blank" rel="noopener" class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors {% if not loop.last %}border-b border-gray-100{% endif %}">
+            <div class="flex-1 min-w-0">
+                <div class="font-medium text-sm text-gray-800 line-clamp-2">{{ article.title }}</div>
+                <div class="flex items-center gap-2 mt-1.5">
+                    <img src="https://www.google.com/s2/favicons?domain={{ article.url.split('/')[2] }}&sz=16" alt="" class="w-4 h-4 rounded" onerror="this.style.display='none'">
+                    <span class="text-xs text-gray-400">{{ article.source }}</span>
+                    {% if article.published %}
+                    <span class="text-xs text-gray-300">|</span>
+                    <span class="text-xs text-gray-400">{{ article.published[:16].replace('T', ' ') }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% if article.image_url %}
+            <img src="{{ article.image_url }}" alt="" class="w-20 h-14 object-cover rounded shrink-0" onerror="this.style.display='none'" loading="lazy">
+            {% endif %}
+        </a>
+        {% endfor %}
+        {% else %}
+        <div class="px-4 py-4 text-center text-sm text-gray-400">No articles available</div>
+        {% endif %}
+    {% endmacro %}
+
+    {% for section in news_sections %}
+    {% set raw = news.get(section.key, {}) %}
+    {% set style = section_styles[section.key] %}
+    {% set has_regions = section.get('has_regions', false) %}
+    <div class="rounded-xl shadow mb-3 overflow-hidden">
+        <button class="news-toggle w-full bg-gradient-to-r {{ style.gradient }} px-5 py-3.5 flex items-center justify-between text-left hover:brightness-110 transition-all" data-target="news-{{ loop.index }}">
+            <div class="flex items-center gap-2.5">
+                <div class="w-2 h-2 rounded-full {{ style.dot }} animate-pulse"></div>
+                <span class="font-bold text-white text-sm">{{ section.label }}</span>
+                {% if section.key == 'business' %}
+                <span class="px-1.5 py-0.5 rounded text-xs bg-white/20 text-white font-medium">Featured</span>
+                {% endif %}
+            </div>
+            <svg class="w-4 h-4 text-white/70 transition-transform news-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+        </button>
+        <div id="news-{{ loop.index }}" class="news-body bg-white {% if loop.index != 1 %}hidden{% endif %}">
+            {% if has_regions %}
+            {{ render_articles(raw.get('in', []) if raw is mapping else []) }}
+            {% else %}
+            {{ render_articles(raw if raw is iterable and raw is not mapping else []) }}
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <div>
@@ -121,6 +205,16 @@
     var h = new Date().getHours();
     var g = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
     document.getElementById('greeting-text').textContent = g;
+
+    document.querySelectorAll('.news-toggle').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var body = document.getElementById(btn.dataset.target);
+            var arrow = btn.querySelector('.news-arrow');
+            body.classList.toggle('hidden');
+            arrow.classList.toggle('rotate-180');
+        });
+    });
+
 })();
 </script>
 {% endblock %}

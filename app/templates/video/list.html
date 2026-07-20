@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}My Video Analyses{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">AI Video Analyses</h1>
+    <a href="/video/upload" class="bg-rose-500 text-white px-4 py-2 rounded-lg hover:bg-rose-600 btn-press text-sm font-medium">Upload Video</a>
+</div>
+
+{% if analyses %}
+<div class="grid gap-3">
+    {% for a in analyses %}
+    <a href="/video/analysis/{{ a.id }}" class="block bg-white rounded-lg shadow p-4 card-hover">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center bg-indigo-100 text-indigo-600 shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="font-medium text-gray-800 truncate max-w-xs">{{ a.original_filename }}</div>
+                    <div class="text-xs text-gray-400 flex items-center gap-2 flex-wrap">
+                        <span>{{ a.created_at.strftime('%b %d, %Y') }}</span>
+                        {% if a.participation %}
+                        <span class="px-1.5 py-0.5 rounded text-xs bg-rose-50 text-rose-600">{{ a.participation.event.title }}</span>
+                        {% else %}
+                        <span class="px-1.5 py-0.5 rounded text-xs bg-indigo-50 text-indigo-600">Practice</span>
+                        {% endif %}
+                        {% if a.filename %}
+                            {% set days_left = days_until_deletion(a.created_at) %}
+                            <span class="px-1.5 py-0.5 rounded text-xs
+                                {% if days_left <= 3 %}bg-red-50 text-red-600
+                                {% elif days_left <= 7 %}bg-amber-50 text-amber-600
+                                {% else %}bg-gray-100 text-gray-500{% endif %}">
+                                {{ days_left }}d left
+                            </span>
+                        {% else %}
+                            <span class="px-1.5 py-0.5 rounded text-xs bg-gray-100 text-gray-400">Video expired</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                {% if a.status == 'completed' %}
+                <div class="text-right">
+                    <div class="text-lg font-bold text-rose-500">{{ "%.1f"|format(a.overall_score) }}/10</div>
+                </div>
+                {% elif a.status == 'failed' %}
+                <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Failed</span>
+                {% else %}
+                <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Processing</span>
+                {% endif %}
+                <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </div>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<div class="bg-white rounded-lg shadow p-8 text-center">
+    <svg class="mx-auto h-16 w-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+    </svg>
+    <p class="text-gray-500 mb-4">No video analyses yet. Upload your first practice video!</p>
+    <a href="/video/upload" class="inline-block bg-rose-500 text-white px-6 py-2 rounded-lg hover:bg-rose-600 btn-press">Upload Video</a>
+</div>
+{% endif %}
+{% endblock %}

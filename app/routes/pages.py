@@ -7,6 +7,8 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.dependencies import get_current_user, get_flash, require_login
 from app.models import Event, Participation, Rating, User
+from app.services.credits import get_user_credit
+from app.services.news import SECTIONS, get_cached_news
 from app.templating import templates
 
 router = APIRouter()
@@ -80,6 +82,12 @@ async def dashboard(
 
     total_participations = db.query(Participation).filter(Participation.student_id == user.id).count()
 
+    credit = get_user_credit(db, user.id)
+    credit_balance = credit.balance
+    db.commit()
+
+    news = get_cached_news()
+
     return templates.TemplateResponse(
         "dashboard.html",
         {
@@ -91,5 +99,8 @@ async def dashboard(
             "upcoming_events": upcoming_events,
             "my_participations": my_participations,
             "pending_ratings": pending_ratings[:10],
+            "credit_balance": credit_balance,
+            "news": news,
+            "news_sections": SECTIONS,
         },
     )
