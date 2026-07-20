@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     daily_video_limit: int = 5
     video_retention_days: int = 15
     mock_ai: bool = False
+    newsdata_api_key: str = ""
+    newsapi_key: str = ""
+    finnhub_api_key: str = ""
 
     model_config = {"env_file": ".env"}
 

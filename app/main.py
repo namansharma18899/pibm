@@ -9,6 +9,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from app.config import settings
 from app.dependencies import RedirectException
+from app.services.news import maybe_refresh_cache
 from app.services.storage import cleanup_expired_videos, ensure_upload_dir
 
 LOG_DIR = Path("logs")
@@ -76,6 +77,8 @@ def create_app() -> FastAPI:
             cleanup_expired_videos(db)
         finally:
             db.close()
+
+        maybe_refresh_cache()
 
     return app
 
