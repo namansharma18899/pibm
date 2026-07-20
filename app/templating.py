@@ -1,4 +1,8 @@
+from datetime import datetime, timedelta, timezone
+
 from fastapi.templating import Jinja2Templates
+
+from app.config import settings
 
 templates = Jinja2Templates(directory="app/templates")
 
@@ -23,4 +27,14 @@ def get_avatar(user_id: int) -> dict:
     return {"emoji": emoji, "color": color}
 
 
+def days_until_deletion(created_at: datetime) -> int:
+    if created_at.tzinfo is None:
+        created_at = created_at.replace(tzinfo=timezone.utc)
+    expires_at = created_at + timedelta(days=settings.video_retention_days)
+    remaining = (expires_at - datetime.now(timezone.utc)).days
+    return max(remaining, 0)
+
+
 templates.env.globals["get_avatar"] = get_avatar
+templates.env.globals["days_until_deletion"] = days_until_deletion
+templates.env.globals["video_retention_days"] = settings.video_retention_days

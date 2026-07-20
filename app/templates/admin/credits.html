@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Manage Credits{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">Student Credits</h1>
+    <a href="/admin" class="text-rose-500 hover:underline">&larr; Back to Dashboard</a>
+</div>
+
+<div class="bg-white rounded-lg shadow p-4 mb-6">
+    <div class="flex gap-6 text-sm text-gray-600">
+        <div>Monthly allotment: <span class="font-semibold text-gray-800">{{ monthly_credits }} credits</span></div>
+        <div>Daily upload limit: <span class="font-semibold text-gray-800">{{ daily_limit }} videos/day</span></div>
+        <div>Cost: <span class="font-semibold text-gray-800">1 credit per MB</span> (rounded up)</div>
+    </div>
+</div>
+
+<div class="bg-white rounded-lg shadow overflow-hidden overflow-x-auto">
+    <table class="w-full">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Name</th>
+                <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Email</th>
+                <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Credits</th>
+                <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Today</th>
+                <th class="text-left px-4 py-3 text-sm font-medium text-gray-500 hidden md:table-cell">Last Reset</th>
+                <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Adjust</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y">
+            {% for item in student_credits %}
+            <tr>
+                {% set av = get_avatar(item.student.id) %}
+                <td class="px-4 py-3 flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-lg shrink-0" style="background-color: {{ av.color }}">{{ av.emoji }}</div>
+                    <a href="/profile/{{ item.student.id }}" class="text-rose-500 hover:underline">{{ item.student.name }}</a>
+                </td>
+                <td class="px-4 py-3 text-sm text-gray-500">
+                    <span class="inline-block max-w-[150px] md:max-w-none truncate">{{ item.student.email }}</span>
+                </td>
+                <td class="px-4 py-3">
+                    <span class="font-semibold {% if item.credit.balance <= 10 %}text-red-500{% elif item.credit.balance <= 30 %}text-amber-500{% else %}text-green-600{% endif %}">
+                        {{ item.credit.balance }}
+                    </span>
+                    <span class="text-gray-400 text-xs">/ {{ monthly_credits }}</span>
+                </td>
+                <td class="px-4 py-3 text-sm">
+                    <span class="{% if item.daily_count >= daily_limit %}text-red-500 font-semibold{% else %}text-gray-600{% endif %}">
+                        {{ item.daily_count }} / {{ daily_limit }}
+                    </span>
+                </td>
+                <td class="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">
+                    {% set m = item.credit.last_reset_month %}
+                    {{ (m // 100) }}-{{ "%02d"|format(m % 100) }}
+                </td>
+                <td class="px-4 py-3">
+                    <form method="post" action="/admin/credits/{{ item.student.id }}" class="flex items-center gap-2">
+                        <input type="number" name="new_balance" value="{{ item.credit.balance }}" min="0"
+                               class="w-20 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-rose-400">
+                        <button type="submit" class="text-sm bg-rose-500 text-white px-3 py-1 rounded hover:bg-rose-600 btn-press">Set</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if not student_credits %}
+<p class="text-gray-500 text-center py-8">No students have registered yet.</p>
+{% endif %}
+{% endblock %}

@@ -105,6 +105,43 @@
 </div>
 {% endif %}
 
+{% if stats.video_analyses %}
+<h2 class="text-lg font-semibold mb-3 mt-8">AI Video Analyses</h2>
+<div class="bg-white rounded-lg shadow overflow-hidden overflow-x-auto">
+    <table class="w-full">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Video</th>
+                <th class="text-left px-4 py-3 text-sm font-medium text-gray-500 hidden md:table-cell">Event</th>
+                <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Date</th>
+                <th class="text-left px-4 py-3 text-sm font-medium text-gray-500">Score</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y">
+            {% for a in stats.video_analyses %}
+            <tr>
+                <td class="px-4 py-3">
+                    <a href="/video/analysis/{{ a.id }}" class="text-rose-500 hover:underline truncate max-w-xs block">{{ a.original_filename }}</a>
+                </td>
+                <td class="px-4 py-3 hidden md:table-cell text-sm text-gray-500">
+                    {% if a.participation %}{{ a.participation.event.title }}{% else %}<span class="px-1.5 py-0.5 rounded text-xs bg-indigo-50 text-indigo-600">Practice</span>{% endif %}
+                </td>
+                <td class="px-4 py-3 text-sm text-gray-500">{{ a.created_at.strftime('%b %d, %Y') }}</td>
+                <td class="px-4 py-3">
+                    <span class="font-bold text-rose-500">{{ "%.1f"|format(a.overall_score) }}/10</span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% if is_own %}
+<div class="mt-2 text-right">
+    <a href="/video/my-analyses" class="text-sm text-rose-500 hover:underline">View all &rarr;</a>
+</div>
+{% endif %}
+{% endif %}
+
 {% else %}
 <div class="bg-white rounded-lg shadow p-8 text-center text-gray-500">
     <p>You don't have permission to view this student's stats.</p>

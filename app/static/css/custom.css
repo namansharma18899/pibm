@@ -112,6 +112,14 @@
     width: 100%;
 }
 
+/* Spinner for video upload */
+.spinner {
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
 /* Flash message entrance */
 .flash-enter {
     animation: slideDown 0.4s ease-out both;

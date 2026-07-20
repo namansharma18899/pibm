@@ -48,7 +48,14 @@
                 </div>
                 {% endif %}
 
-                {% if user and event.status == 'completed' and not user_is_speaker and user.id != p.student_id %}
+                {% if user and user.id == p.student_id %}
+                    <a href="/video/upload/{{ p.id }}"
+                       class="text-sm bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600 btn-press">Upload Video</a>
+                    {% if p.video_analyses %}
+                    <a href="/video/analysis/{{ p.video_analyses[-1].id }}"
+                       class="text-sm bg-indigo-100 text-indigo-700 px-3 py-1 rounded hover:bg-indigo-200">AI Analysis</a>
+                    {% endif %}
+                {% elif user and event.status == 'completed' and not user_is_speaker %}
                     {% if p.id in my_ratings %}
                         <a href="/events/{{ event.id }}/rate/{{ p.id }}"
                            class="text-sm bg-gray-100 text-gray-600 px-3 py-1 rounded hover:bg-gray-200">Edit Feedback</a>

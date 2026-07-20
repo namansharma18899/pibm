@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies import get_current_user, get_flash, require_login
-from app.models import Event, Participation, Rating, User
+from app.models import Event, Participation, Rating, User, VideoAnalysis
 from app.templating import templates
 
 router = APIRouter()
@@ -64,6 +64,14 @@ def compute_profile_stats(db: Session, target_user: User) -> dict:
 
     event_history.sort(key=lambda x: x["event"].scheduled_date, reverse=True)
 
+    video_analyses = (
+        db.query(VideoAnalysis)
+        .filter(VideoAnalysis.user_id == target_user.id, VideoAnalysis.status == "completed")
+        .order_by(VideoAnalysis.created_at.desc())
+        .limit(5)
+        .all()
+    )
+
     return {
         "total_events": total_events,
         "attended_events": attended_events,
@@ -71,6 +79,7 @@ def compute_profile_stats(db: Session, target_user: User) -> dict:
         "category_avgs": category_avgs,
         "overall_avg": overall_avg,
         "event_history": event_history,
+        "video_analyses": video_analyses,
     }
 
 

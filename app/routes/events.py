@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session
@@ -6,6 +8,8 @@ from app.database import get_db
 from app.dependencies import get_current_user, get_flash, require_login, set_flash
 from app.models import Event, Participation, Rating, User
 from app.templating import templates
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -224,5 +228,7 @@ async def submit_rating(
                 )
 
     db.commit()
+    logger.info("Rating submitted — rater_id=%d participant_id=%d event_id=%d type=%s",
+                user.id, participation_id, event_id, event.event_type)
     set_flash(request, f"Rating submitted for {participation.student.name}")
     return RedirectResponse(url=f"/events/{event_id}", status_code=303)

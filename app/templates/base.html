@@ -25,6 +25,7 @@
             <div class="hidden md:flex items-center gap-4">
                 {% if user %}
                     <a href="/events" class="text-gray-600 hover:text-rose-500">Events</a>
+                    <a href="/video/my-analyses" class="text-gray-600 hover:text-rose-500">AI Analysis</a>
                     <a href="/profile/me" class="text-gray-600 hover:text-rose-500">My Profile</a>
                     {% if user.role == "admin" %}
                         <a href="/admin" class="text-gray-600 hover:text-rose-500 font-medium">Admin</a>
@@ -49,6 +50,7 @@
                 <span class="text-sm text-gray-700 font-medium">{{ user.name }}</span>
             </div>
             <a href="/events" class="block text-gray-600 hover:text-rose-500">Events</a>
+            <a href="/video/my-analyses" class="block text-gray-600 hover:text-rose-500">AI Analysis</a>
             <a href="/profile/me" class="block text-gray-600 hover:text-rose-500">My Profile</a>
             {% if user.role == "admin" %}
                 <a href="/admin" class="block text-gray-600 hover:text-rose-500 font-medium">Admin</a>
