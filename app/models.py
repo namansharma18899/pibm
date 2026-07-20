@@ -167,6 +167,7 @@ class VideoAnalysis(Base):
     strengths: Mapped[str | None] = mapped_column(Text, nullable=True)
     improvements: Mapped[str | None] = mapped_column(Text, nullable=True)
     credits_used: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    analysis_data: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)
     )

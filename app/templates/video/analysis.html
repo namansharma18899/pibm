@@ -40,6 +40,58 @@
     </div>
 </div>
 
+{% set data = parse_analysis_data(analysis.analysis_data) %}
+{% if data %}
+{# ===== NEW DETAILED ANALYSIS ===== #}
+
+{% if analysis.summary %}
+<div class="bg-white rounded-lg shadow p-6 mb-6">
+    <h2 class="text-lg font-semibold mb-2">Executive Summary</h2>
+    <p class="text-gray-700">{{ analysis.summary }}</p>
+</div>
+{% endif %}
+
+{% for cfg in analysis_categories %}
+{% set cat = data[cfg.key] %}
+<div class="bg-white rounded-lg shadow mb-4 overflow-hidden">
+    <button class="category-toggle w-full p-5 flex items-center justify-between text-left hover:bg-gray-50 transition-colors" data-target="cat-{{ loop.index }}">
+        <div class="flex items-center gap-3">
+            <h2 class="text-lg font-semibold">{{ cfg.label }}</h2>
+            <span class="px-2 py-0.5 rounded-full text-xs font-medium {{ cfg.badge_bg }} {{ cfg.badge_text }}">{{ cfg.weight }}%</span>
+        </div>
+        <div class="flex items-center gap-3">
+            {% set params = [] %}
+            {% for key, val in cat.items() if val is mapping %}
+                {% if params.append(val.score_out_of_100) %}{% endif %}
+            {% endfor %}
+            {% set avg = (params|sum / params|length)|round|int if params else 0 %}
+            <span class="text-xl font-bold {% if avg >= 70 %}text-green-600{% elif avg >= 40 %}text-amber-600{% else %}text-red-600{% endif %}">{{ avg }}</span>
+            <span class="text-gray-400 text-sm">/100</span>
+            <svg class="w-5 h-5 text-gray-400 transition-transform category-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+        </div>
+    </button>
+    <div id="cat-{{ loop.index }}" class="category-body hidden border-t px-5 pb-5 pt-4">
+        {% for key, val in cat.items() if val is mapping %}
+        <div class="mb-4 {% if loop.last %}mb-0{% endif %}">
+            <div class="flex justify-between text-sm mb-1">
+                <span class="font-medium text-gray-700">{{ format_param_name(key) }}</span>
+                <span class="font-bold {% if val.score_out_of_100 >= 70 %}text-green-600{% elif val.score_out_of_100 >= 40 %}text-amber-600{% else %}text-red-600{% endif %} skill-score" data-target="{{ val.score_out_of_100 }}" data-decimals="0">0</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden mb-1.5">
+                <div class="skill-bar h-2.5 rounded-full {{ cfg.bar }}"
+                    data-width="{{ val.score_out_of_100 }}" style="width: 0%"></div>
+            </div>
+            <p class="text-xs text-gray-500">{{ val.feedback }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endfor %}
+
+{% else %}
+{# ===== OLD ANALYSIS FALLBACK ===== #}
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
     <div class="bg-white rounded-lg shadow p-6">
         <h2 class="text-lg font-semibold mb-4">Scores</h2>
@@ -84,6 +136,7 @@
         <p class="text-gray-600 text-sm whitespace-pre-line">{{ analysis.improvements }}</p>
     </div>
 </div>
+{% endif %}
 
 {% if analysis.filename %}
 <div class="bg-white rounded-lg shadow p-6 mb-6">
@@ -94,7 +147,7 @@
             {% if days_left <= 3 %}bg-red-100 text-red-700
             {% elif days_left <= 7 %}bg-amber-100 text-amber-700
             {% else %}bg-gray-100 text-gray-600{% endif %}">
-            Video deleted in {{ days_left }} day{{ 's' if days_left != 1 }}
+            Video will be deleted in {{ days_left }} day{{ 's' if days_left != 1 }}
         </span>
     </div>
     <video controls class="w-full rounded-lg bg-black" preload="metadata">
@@ -121,12 +174,13 @@ document.addEventListener("DOMContentLoaded", function () {
             setTimeout(function () {
                 bar.style.transition = "width 1s cubic-bezier(0.4, 0, 0.2, 1)";
                 bar.style.width = bar.dataset.width + "%";
-            }, i * 150);
+            }, i * 80);
         });
     }, 200);
 
     document.querySelectorAll(".skill-score").forEach(function (el, i) {
         var target = parseFloat(el.dataset.target);
+        var decimals = parseInt(el.dataset.decimals || "1", 10);
         var duration = 1000;
         var start;
         setTimeout(function () {
@@ -135,11 +189,20 @@ document.addEventListener("DOMContentLoaded", function () {
                 var elapsed = now - start;
                 var progress = Math.min(elapsed / duration, 1);
                 progress = 1 - Math.pow(1 - progress, 3);
-                el.textContent = (target * progress).toFixed(1);
+                el.textContent = (target * progress).toFixed(decimals);
                 if (progress < 1) requestAnimationFrame(tick);
             }
             requestAnimationFrame(tick);
-        }, 200 + i * 150);
+        }, 200 + i * 80);
+    });
+
+    document.querySelectorAll(".category-toggle").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            var body = document.getElementById(btn.dataset.target);
+            var arrow = btn.querySelector(".category-arrow");
+            body.classList.toggle("hidden");
+            arrow.classList.toggle("rotate-180");
+        });
     });
 });
 </script>

@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 import uuid
 from pathlib import Path
@@ -18,7 +19,7 @@ from app.services.credits import (
     get_user_credit,
     refund_credits,
 )
-from app.services.gemini import analyze_video
+from app.services.gemini import analyze_video, compute_overall_score
 from app.services.storage import UPLOAD_DIR, get_upload_path, validate_video_file
 from app.templating import templates
 
@@ -155,17 +156,11 @@ async def handle_upload(
     logger.info("Analysis started — analysis_id=%d user_id=%d file=%s", analysis.id, user.id, stored_name)
     try:
         result = await asyncio.to_thread(analyze_video, get_upload_path(stored_name))
-        analysis.fluency = result["fluency"]
-        analysis.word_choice = result["word_choice"]
-        analysis.sentence_formation = result["sentence_formation"]
-        analysis.clarity = result["clarity"]
-        analysis.confidence = result["confidence"]
-        analysis.overall_score = result["overall_score"]
-        analysis.summary = result["summary"]
-        analysis.strengths = result["strengths"]
-        analysis.improvements = result["improvements"]
+        analysis.analysis_data = json.dumps(result)
+        analysis.overall_score = compute_overall_score(result)
+        analysis.summary = result.get("overall_summary", "")
         analysis.status = "completed"
-        logger.info("Analysis completed — analysis_id=%d score=%.1f", analysis.id, result["overall_score"])
+        logger.info("Analysis completed — analysis_id=%d score=%.1f", analysis.id, analysis.overall_score)
     except Exception as e:
         analysis.status = "failed"
         analysis.error_message = str(e)

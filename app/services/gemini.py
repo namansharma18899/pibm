@@ -4,51 +4,184 @@ import random
 import time
 from pathlib import Path
 
+from pydantic import BaseModel, Field
+
 from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-ANALYSIS_PROMPT = """You are an expert public speaking coach analyzing a student's speech video.
 
-Evaluate the speaker on the following criteria, scoring each from 1.0 to 10.0:
+class ParameterScore(BaseModel):
+    score_out_of_100: int = Field(description="The score assigned for this specific parameter (0-100).")
+    feedback: str = Field(description="Specific, actionable feedback explaining the score. 1-2 sentences.")
 
-1. Fluency - How smooth and natural is the speech flow? Consider pauses, filler words (um, uh), and stuttering.
-2. Word Choice - How appropriate and rich is the vocabulary? Is the language suitable for the context?
-3. Sentence Formation - How well-structured are the sentences? Consider grammar, coherence, and logical flow.
-4. Clarity - How clear and understandable is the speech? Consider pronunciation, articulation, and enunciation.
-5. Confidence - How confident does the speaker appear? Consider vocal tone, pace, volume, and steadiness.
-6. Overall Score - A weighted overall assessment of the speech quality.
 
-Also provide:
-- Summary: A 2-3 sentence overall assessment
-- Strengths: 2-3 specific things the speaker did well
-- Areas for Improvement: 2-3 specific, actionable suggestions
+class VisualPresence(BaseModel):
+    eye_contact_consistency_30pct: ParameterScore
+    posture_and_alignment_25pct: ParameterScore
+    hand_gestures_20pct: ParameterScore
+    facial_expressions_15pct: ParameterScore
+    spatial_awareness_10pct: ParameterScore
 
-Respond ONLY with valid JSON in this exact format:
-{
-  "fluency": <number>,
-  "word_choice": <number>,
-  "sentence_formation": <number>,
-  "clarity": <number>,
-  "confidence": <number>,
-  "overall_score": <number>,
-  "summary": "<string>",
-  "strengths": "<string>",
-  "improvements": "<string>"
-}"""
 
-REQUIRED_KEYS = {"fluency", "word_choice", "sentence_formation", "clarity", "confidence", "overall_score", "summary", "strengths", "improvements"}
+class VocalDelivery(BaseModel):
+    pacing_25pct: ParameterScore
+    vocal_variety_25pct: ParameterScore
+    strategic_pausing_20pct: ParameterScore
+    volume_and_projection_15pct: ParameterScore
+    enunciation_15pct: ParameterScore
+
+
+class ContentStructure(BaseModel):
+    frameworks_and_data_25pct: ParameterScore
+    opening_hook_20pct: ParameterScore
+    logical_flow_20pct: ParameterScore
+    actionable_conclusion_20pct: ParameterScore
+    time_management_15pct: ParameterScore
+
+
+class VerbalCommunication(BaseModel):
+    filler_word_frequency_30pct: ParameterScore
+    vocabulary_richness_25pct: ParameterScore
+    conciseness_20pct: ParameterScore
+    active_vs_passive_voice_15pct: ParameterScore
+    grammar_and_syntax_10pct: ParameterScore
+
+
+class AudienceEngagement(BaseModel):
+    confidence_score_30pct: ParameterScore
+    empathy_and_relatability_25pct: ParameterScore
+    rhetorical_questions_20pct: ParameterScore
+    storytelling_15pct: ParameterScore
+    qa_readiness_10pct: ParameterScore
+
+
+class PresentationEvaluation(BaseModel):
+    visual_presence: VisualPresence
+    vocal_delivery: VocalDelivery
+    content_structure: ContentStructure
+    verbal_communication: VerbalCommunication
+    audience_engagement: AudienceEngagement
+    overall_summary: str = Field(description="A brief executive summary of the student's overall performance.")
+
+
+ANALYSIS_PROMPT = """You are an expert executive communications coach for MBA and Master's students.
+Analyze the attached presentation video. Evaluate the student's performance strictly according to the schema provided.
+
+For each parameter, provide a score from 0 to 100 based on standard executive presence benchmarks,
+and write 1-2 sentences of highly specific, actionable feedback referencing exact moments or quotes
+from the video where possible."""
+
+CATEGORY_WEIGHTS = {
+    "visual_presence": 0.25,
+    "vocal_delivery": 0.20,
+    "content_structure": 0.25,
+    "verbal_communication": 0.15,
+    "audience_engagement": 0.15,
+}
+
+CATEGORY_PARAMS = {
+    "visual_presence": [
+        ("eye_contact_consistency_30pct", 0.30),
+        ("posture_and_alignment_25pct", 0.25),
+        ("hand_gestures_20pct", 0.20),
+        ("facial_expressions_15pct", 0.15),
+        ("spatial_awareness_10pct", 0.10),
+    ],
+    "vocal_delivery": [
+        ("pacing_25pct", 0.25),
+        ("vocal_variety_25pct", 0.25),
+        ("strategic_pausing_20pct", 0.20),
+        ("volume_and_projection_15pct", 0.15),
+        ("enunciation_15pct", 0.15),
+    ],
+    "content_structure": [
+        ("frameworks_and_data_25pct", 0.25),
+        ("opening_hook_20pct", 0.20),
+        ("logical_flow_20pct", 0.20),
+        ("actionable_conclusion_20pct", 0.20),
+        ("time_management_15pct", 0.15),
+    ],
+    "verbal_communication": [
+        ("filler_word_frequency_30pct", 0.30),
+        ("vocabulary_richness_25pct", 0.25),
+        ("conciseness_20pct", 0.20),
+        ("active_vs_passive_voice_15pct", 0.15),
+        ("grammar_and_syntax_10pct", 0.10),
+    ],
+    "audience_engagement": [
+        ("confidence_score_30pct", 0.30),
+        ("empathy_and_relatability_25pct", 0.25),
+        ("rhetorical_questions_20pct", 0.20),
+        ("storytelling_15pct", 0.15),
+        ("qa_readiness_10pct", 0.10),
+    ],
+}
+
+
+def compute_overall_score(data: dict) -> float:
+    total = 0.0
+    for category_key, params in CATEGORY_PARAMS.items():
+        cat = data[category_key]
+        cat_weight = CATEGORY_WEIGHTS[category_key]
+        cat_score = sum(cat[p]["score_out_of_100"] * w for p, w in params)
+        total += cat_score * cat_weight
+    return round(total / 10, 1)
+
+
+def _mock_score() -> dict:
+    return {
+        "score_out_of_100": random.randint(55, 95),
+        "feedback": "Mock feedback. Good use of structure, but consider varying your pacing more during key transitions.",
+    }
 
 
 def _mock_analyze(file_path: Path) -> dict:
     logger.info("MOCK AI: Returning fake scores for %s", file_path.name)
     time.sleep(1)
-    scores = {k: round(random.uniform(5.0, 9.5), 1) for k in ["fluency", "word_choice", "sentence_formation", "clarity", "confidence"]}
-    scores["overall_score"] = round(sum(scores.values()) / len(scores), 1)
-    scores["summary"] = "This is a mock analysis. The speaker demonstrated reasonable speaking skills across all dimensions."
-    scores["strengths"] = "Good pacing and clear articulation. Maintained steady eye contact throughout the presentation."
-    scores["improvements"] = "Consider varying vocal tone to emphasize key points. Reduce filler words like 'um' and 'uh'."
-    return scores
+    return {
+        "visual_presence": {
+
+            "eye_contact_consistency_30pct": _mock_score(),
+            "posture_and_alignment_25pct": _mock_score(),
+            "hand_gestures_20pct": _mock_score(),
+            "facial_expressions_15pct": _mock_score(),
+            "spatial_awareness_10pct": _mock_score(),
+        },
+        "vocal_delivery": {
+
+            "pacing_25pct": _mock_score(),
+            "vocal_variety_25pct": _mock_score(),
+            "strategic_pausing_20pct": _mock_score(),
+            "volume_and_projection_15pct": _mock_score(),
+            "enunciation_15pct": _mock_score(),
+        },
+        "content_structure": {
+
+            "frameworks_and_data_25pct": _mock_score(),
+            "opening_hook_20pct": _mock_score(),
+            "logical_flow_20pct": _mock_score(),
+            "actionable_conclusion_20pct": _mock_score(),
+            "time_management_15pct": _mock_score(),
+        },
+        "verbal_communication": {
+
+            "filler_word_frequency_30pct": _mock_score(),
+            "vocabulary_richness_25pct": _mock_score(),
+            "conciseness_20pct": _mock_score(),
+            "active_vs_passive_voice_15pct": _mock_score(),
+            "grammar_and_syntax_10pct": _mock_score(),
+        },
+        "audience_engagement": {
+
+            "confidence_score_30pct": _mock_score(),
+            "empathy_and_relatability_25pct": _mock_score(),
+            "rhetorical_questions_20pct": _mock_score(),
+            "storytelling_15pct": _mock_score(),
+            "qa_readiness_10pct": _mock_score(),
+        },
+        "overall_summary": "Mock summary. The student showed strong logical structure and confident delivery. Key areas for improvement include vocal variety during transitions and more deliberate hand gestures to reinforce key points.",
+    }
 
 
 def analyze_video(file_path: Path) -> dict:
@@ -86,7 +219,11 @@ def analyze_video(file_path: Path) -> dict:
         response = client.models.generate_content(
             model="gemini-3.5-flash",
             contents=[uploaded, ANALYSIS_PROMPT],
-            config=types.GenerateContentConfig(response_mime_type="application/json"),
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=PresentationEvaluation,
+                temperature=0.2,
+            ),
         )
         logger.info("Received response from Gemini (%d chars)", len(response.text or ""))
         result = json.loads(response.text)
@@ -101,13 +238,5 @@ def analyze_video(file_path: Path) -> dict:
             client.files.delete(name=uploaded.name)
         except Exception:
             pass
-
-    missing = REQUIRED_KEYS - set(result.keys())
-    if missing:
-        raise ValueError(f"AI response missing fields: {', '.join(missing)}")
-
-    for key in ["fluency", "word_choice", "sentence_formation", "clarity", "confidence", "overall_score"]:
-        score = float(result[key])
-        result[key] = max(1.0, min(10.0, score))
 
     return result

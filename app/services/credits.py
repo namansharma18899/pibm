@@ -51,6 +51,7 @@ def get_daily_upload_count(db: Session, user_id: int) -> int:
         .filter(
             VideoAnalysis.user_id == user_id,
             VideoAnalysis.created_at >= today_start,
+            VideoAnalysis.status == "completed",
         )
         .count()
     )
